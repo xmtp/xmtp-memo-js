@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package xmtp.memo;
+
+message PayloadV1 {
+  string fromAddr = 1;
+  string toAddr = 2;
+  string encodedContent = 3;
+  uint64 timestamp = 4;
+}
+
+message MemoV1 {
+  bytes encodedPayload =1;
+  bytes signature = 2;
+}
+
+message Signature {
+  bytes signature = 1;
+  uint32 signatureType = 2;
+
+}
