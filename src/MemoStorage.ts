@@ -1,46 +1,12 @@
-import { EncryptedPackage } from "./Lit";
-import { MemoV1 } from "./Memo";
-
-const STORAGE_HOSTNAME = process.env.STORAGE_HOSTNAME ?? ""; // TODO: Replace once final domain name is created
+import { EncryptedMemoV1 } from "./EncryptedMemo";
 
 export abstract class MemoStorage {
-  abstract fetchMemos(addr: string): Promise<MemoV1[]>;
+  abstract fetchEncryptedMemos(
+    addr: string
+  ): Promise<AsyncGenerator<EncryptedMemoV1[], any>>;
 
-  abstract postMemo(
+  abstract postEncryptedMemo(
     addr: string,
-    encryptedPackage: EncryptedPackage
+    encryptedPackage: EncryptedMemoV1
   ): Promise<boolean>;
-}
-
-export class DemoMemoStorage implements MemoStorage {
-  hostname;
-  constructor(hostname?: string) {
-    this.hostname = hostname ?? STORAGE_HOSTNAME;
-  }
-
-  async fetchMemos(recvAddr: string): Promise<MemoV1[]> {
-    console.log("HOST:", `${this.hostname}/inbox/${recvAddr}`);
-    const res = await fetch(`${this.hostname}/inbox/${recvAddr}`);
-    return [];
-  }
-
-  async postMemo(
-    addr: string,
-    encryptedPackage: EncryptedPackage | Uint8Array
-  ): Promise<boolean> {
-    try {
-      const resp = await fetch(`${this.hostname}/inbox/${addr}`, {
-        method: "POST",
-        body: JSON.stringify(encryptedPackage),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-    } catch (err) {
-      console.error(err);
-      return false;
-    }
-
-    return true;
-  }
 }

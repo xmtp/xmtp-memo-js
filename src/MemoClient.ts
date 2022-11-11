@@ -1,9 +1,10 @@
 import { MemoV1 } from "./Memo";
-import { MemoStorage, DemoMemoStorage } from "./MemoStorage";
-import Lit, { EncryptedPackage } from "./Lit";
-import Signature from "./Signature";
+import { MemoStorage } from "./MemoStorage";
+import Lit from "./Lit";
 import { AuthSig } from "./AuthSig";
 import { MsgSigner } from "./MsgSigner";
+import { EncryptedMemoV1 } from "./EncryptedMemo";
+import { flattenStream, gatherStream, mapStream } from "./export";
 
 type Content = string;
 
@@ -13,12 +14,7 @@ export default class MemoClient {
   storage;
   addr;
 
-  constructor(
-    addr: string,
-    authSig: AuthSig,
-    msgSigner: MsgSigner,
-    storage: MemoStorage
-  ) {
+  constructor(authSig: AuthSig, msgSigner: MsgSigner, storage: MemoStorage) {
     this.litClient = new Lit(authSig);
     this.msgSigner = msgSigner;
     this.storage = storage;
@@ -26,8 +22,16 @@ export default class MemoClient {
   }
 
   async listMemos(): Promise<MemoV1[]> {
-    const memos = await this.storage.fetchMemos(this.addr);
-    return [];
+    const encryptedMemoStream = await this.storage.fetchEncryptedMemos(
+      this.addr
+    );
+
+    const memoPages = mapStream(
+      encryptedMemoStream,
+      this.litClient.decrypt.bind(this.litClient)
+    );
+    const memos = flattenStream(memoPages);
+    return gatherStream(memos);
   }
 
   async listSentMemos(): Promise<MemoV1[]> {
@@ -41,28 +45,25 @@ export default class MemoClient {
       content,
       this.msgSigner
     );
-    const bytes = await memo.toBytes();
 
+    const bytes = await memo.toBytes();
     if (!bytes) {
       return false;
     }
 
     const encryptedMemo = await this.encryptWithLitForAccount(bytes, toAddr);
-
-    // TODO: Save EncryptedMemo
-
-    return false;
+    return this.storage.postEncryptedMemo(toAddr, encryptedMemo);
   }
 
   private async encryptWithLitForAccount(
     bytes: Uint8Array,
     toAddr: string
-  ): Promise<EncryptedPackage> {
+  ): Promise<EncryptedMemoV1> {
     const accTemplate =
       this.litClient.accessControllConditionTemplate_userAddr();
 
     const acc = this.litClient.renderAccTemplate(accTemplate, {
-      userAddr: toAddr,
+      userAddress: toAddr,
     });
 
     return await this.litClient.encryptBytes(bytes, acc);

@@ -2,18 +2,22 @@ import LitJsSdk from "@lit-protocol/sdk-browser";
 import { Blob } from "buffer";
 import { render } from "mustache";
 import { AuthSig } from "./AuthSig";
-
-export type Acc = any;
+import { EncryptedMemoV1 } from "./EncryptedMemo";
+import { MemoV1 } from "./Memo";
+import { bytesToHex } from "./utils";
 
 export type AccView = {
-  userAddr: string;
+  userAddress: string;
 };
 
-export type EncryptedPackage = {
-  encryptedString: Blob;
-  encryptedSymmetricKey: string;
-  accessControlConditions: Acc;
-};
+export interface Acc {
+  contractAddress: string;
+  standardContractType: string;
+  chain: number;
+  method: string;
+  parameters: Array<string>;
+  returnValueTest: any;
+}
 
 export default class Lit {
   client: any; // Types do not exist fot LitNodeClient yet
@@ -25,12 +29,15 @@ export default class Lit {
     this.authSig = authSig; // AuthSig is passed in at initialization to ensure the caller is controlling when signatures are requested from the user
   }
 
-  async connect() {
+  async connect(): Promise<void> {
     this.client = new LitJsSdk.LitNodeClient({ debug: false });
     await this.client.connect();
   }
 
-  async encryptBytes(bytes: Uint8Array, accessControlConditions: Acc) {
+  async encryptBytes(
+    bytes: Uint8Array,
+    accessControlConditions: Acc
+  ): Promise<EncryptedMemoV1> {
     if (!this.client) {
       await this.connect();
     }
@@ -38,12 +45,14 @@ export default class Lit {
     const chain = this.chain;
     const authSig = await this.getAuthSig();
 
-    // TODO: EncryptString requires a string which is decoded into an Uint8Array
-    // Can this be streamlined?
-    const stringEncodedData = LitJsSdk.uint8arrayToString(bytes);
+    const stringEncodedData = LitJsSdk.uint8arrayToString(bytes, "base64");
     const { encryptedString, symmetricKey } = await LitJsSdk.encryptString(
       stringEncodedData
     );
+
+    const encryptedContentsBuffer = await (
+      encryptedString as Blob
+    ).arrayBuffer();
 
     const encryptedSymmetricKey = await this.client.saveEncryptionKey({
       accessControlConditions: accessControlConditions,
@@ -52,40 +61,40 @@ export default class Lit {
       chain,
     });
 
-    return {
-      encryptedString,
-      encryptedSymmetricKey: LitJsSdk.uint8arrayToString(
-        encryptedSymmetricKey,
-        "base64"
-      ),
-      accessControlConditions,
-    };
+    return new EncryptedMemoV1(
+      new Uint8Array(encryptedContentsBuffer),
+      encryptedSymmetricKey,
+      accessControlConditions
+    );
   }
 
-  async decryptBytes(
-    encryptedBytes: Uint8Array,
-    encryptedSymmetricKey: Uint8Array,
-    accessControlConditions: Acc
-  ) {
+  async decrypt(encryptedMemo: EncryptedMemoV1): Promise<MemoV1> {
     if (!this.client) {
       await this.connect();
     }
 
     const chain = this.chain;
 
-    const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
+    var authSig = await this.getAuthSig();
     const symmetricKey = await this.client.getEncryptionKey({
-      accessControlConditions: accessControlConditions,
-      toDecrypt: encryptedSymmetricKey,
+      accessControlConditions: encryptedMemo.accessControlConditions,
+      toDecrypt: bytesToHex(encryptedMemo.encryptedSymmetricKey),
       chain,
       authSig,
     });
 
-    const decryptedString = await LitJsSdk.decryptFile(
-      encryptedBytes,
-      symmetricKey
+    const blob = new Blob([encryptedMemo.encryptedString], {
+      type: "application/octet-stream",
+    });
+
+    const decryptedString = await LitJsSdk.decryptString(blob, symmetricKey);
+    const decryptedBytes = LitJsSdk.uint8arrayFromString(
+      decryptedString,
+      "base64"
     );
-    return decryptedString;
+
+    const memo = await MemoV1.fromBytes(decryptedBytes);
+    return memo;
   }
 
   async getAuthSig(): Promise<AuthSig> {

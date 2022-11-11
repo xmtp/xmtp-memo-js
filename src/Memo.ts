@@ -2,6 +2,9 @@ import { MockSigner, MsgSigner } from "./MsgSigner";
 import * as proto from "./proto/memo";
 import Signature from "./Signature";
 
+class BadSignatureError extends Error {}
+class NoSignerError extends Error {}
+
 export class PayloadV1 implements proto.PayloadV1 {
   fromAddr: string;
   toAddr: string;
@@ -54,11 +57,11 @@ export class MemoV1 {
     return new MemoV1(payload, signer);
   }
 
-  async toBytes(): Promise<Uint8Array | undefined> {
+  async toBytes(): Promise<Uint8Array> {
     const encodedPayload = this.payload.toBytes();
 
     if (!this.signer) {
-      return undefined;
+      throw new NoSignerError();
     }
 
     const signature = await this.signer.signBytes(encodedPayload);
@@ -70,14 +73,13 @@ export class MemoV1 {
     }).finish();
   }
 
-  static async fromBytes(bytes: Uint8Array): Promise<MemoV1 | undefined> {
+  static async fromBytes(bytes: Uint8Array): Promise<MemoV1> {
     const obj = proto.MemoV1.decode(bytes);
     const payload = PayloadV1.fromBytes(obj.encodedPayload);
     const signature = Signature.fromBytes(obj.signature);
 
     if (!signature.verify(payload.fromAddr, obj.encodedPayload)) {
-      console.log("BAD VERIT");
-      return undefined;
+      throw new BadSignatureError();
     }
     return new MemoV1(payload);
   }

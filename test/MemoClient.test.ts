@@ -6,10 +6,11 @@ describe("MemoClient", function () {
     const amal = await createTestMemoClient();
     const bola = await createTestMemoClient();
 
-    await amal.sendMemo(bola.addr, "Test");
+    const content = "Test";
+    await amal.sendMemo(bola.addr, content);
 
     for (const memo of await bola.listMemos()) {
-      console.log("M:", memo);
+      assert.equal(memo.payload.encodedContent, content);
     }
   });
 });

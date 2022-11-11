@@ -3,7 +3,7 @@ import { Client, PrivateKey } from "@xmtp/xmtp-js";
 import { AuthSig } from "../src/AuthSig";
 import { MemoClient } from "../src";
 import { MockSigner } from "../src/MsgSigner";
-import { DemoMemoStorage } from "../src/MemoStorage";
+import { XmtpStorage } from "../src/storage/XmtpStorage";
 
 export function newWallet(): Wallet {
   const key = PrivateKey.generate();
@@ -21,10 +21,9 @@ export async function createTestMemoClient(): Promise<MemoClient> {
   // Place holder for wallet signatures
   const wallet = new MockSigner();
   const msgSigner = new MockSigner();
-  const storage = new DemoMemoStorage();
+  const storage = await XmtpStorage.create({ env: "dev" });
 
   const client = new MemoClient(
-    await msgSigner.getAddress(),
     await msgSigner.genAuthSig(new TextEncoder().encode("AUTH")),
     msgSigner,
     storage

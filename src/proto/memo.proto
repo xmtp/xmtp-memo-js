@@ -17,5 +17,10 @@ message MemoV1 {
 message Signature {
   bytes signature = 1;
   uint32 signatureType = 2;
+}
 
+message EncryptedMemoV1 {
+  bytes encryptedString = 1;
+  bytes encryptedSymmetricKey = 2;
+  bytes accessControlConditions= 3;
 }

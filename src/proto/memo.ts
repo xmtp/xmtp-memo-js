@@ -21,6 +21,12 @@ export interface Signature {
   signatureType: number;
 }
 
+export interface EncryptedMemoV1 {
+  encryptedString: Uint8Array;
+  encryptedSymmetricKey: Uint8Array;
+  accessControlConditions: Uint8Array;
+}
+
 function createBasePayloadV1(): PayloadV1 {
   return { fromAddr: "", toAddr: "", encodedContent: "", timestamp: 0 };
 }
@@ -214,6 +220,90 @@ export const Signature = {
     const message = createBaseSignature();
     message.signature = object.signature ?? new Uint8Array();
     message.signatureType = object.signatureType ?? 0;
+    return message;
+  },
+};
+
+function createBaseEncryptedMemoV1(): EncryptedMemoV1 {
+  return {
+    encryptedString: new Uint8Array(),
+    encryptedSymmetricKey: new Uint8Array(),
+    accessControlConditions: new Uint8Array(),
+  };
+}
+
+export const EncryptedMemoV1 = {
+  encode(message: EncryptedMemoV1, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.encryptedString.length !== 0) {
+      writer.uint32(10).bytes(message.encryptedString);
+    }
+    if (message.encryptedSymmetricKey.length !== 0) {
+      writer.uint32(18).bytes(message.encryptedSymmetricKey);
+    }
+    if (message.accessControlConditions.length !== 0) {
+      writer.uint32(26).bytes(message.accessControlConditions);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): EncryptedMemoV1 {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseEncryptedMemoV1();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.encryptedString = reader.bytes();
+          break;
+        case 2:
+          message.encryptedSymmetricKey = reader.bytes();
+          break;
+        case 3:
+          message.accessControlConditions = reader.bytes();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): EncryptedMemoV1 {
+    return {
+      encryptedString: isSet(object.encryptedString) ? bytesFromBase64(object.encryptedString) : new Uint8Array(),
+      encryptedSymmetricKey: isSet(object.encryptedSymmetricKey)
+        ? bytesFromBase64(object.encryptedSymmetricKey)
+        : new Uint8Array(),
+      accessControlConditions: isSet(object.accessControlConditions)
+        ? bytesFromBase64(object.accessControlConditions)
+        : new Uint8Array(),
+    };
+  },
+
+  toJSON(message: EncryptedMemoV1): unknown {
+    const obj: any = {};
+    message.encryptedString !== undefined &&
+      (obj.encryptedString = base64FromBytes(
+        message.encryptedString !== undefined ? message.encryptedString : new Uint8Array(),
+      ));
+    message.encryptedSymmetricKey !== undefined &&
+      (obj.encryptedSymmetricKey = base64FromBytes(
+        message.encryptedSymmetricKey !== undefined ? message.encryptedSymmetricKey : new Uint8Array(),
+      ));
+    message.accessControlConditions !== undefined &&
+      (obj.accessControlConditions = base64FromBytes(
+        message.accessControlConditions !== undefined ? message.accessControlConditions : new Uint8Array(),
+      ));
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<EncryptedMemoV1>, I>>(object: I): EncryptedMemoV1 {
+    const message = createBaseEncryptedMemoV1();
+    message.encryptedString = object.encryptedString ?? new Uint8Array();
+    message.encryptedSymmetricKey = object.encryptedSymmetricKey ?? new Uint8Array();
+    message.accessControlConditions = object.accessControlConditions ?? new Uint8Array();
     return message;
   },
 };
