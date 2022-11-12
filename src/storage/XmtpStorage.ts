@@ -5,9 +5,6 @@ import { fetcher, messageApi } from "@xmtp/proto";
 import { EncryptedMemoV1 } from "../EncryptedMemo";
 import { mapPaginatedStream } from "../export";
 
-class BadDecodeError extends Error {}
-class BadEncodeError extends Error {}
-
 export class XmtpStorage implements MemoStorage {
   client: Client;
 

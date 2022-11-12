@@ -4,7 +4,7 @@ import Lit from "./Lit";
 import { AuthSig } from "./AuthSig";
 import { MsgSigner } from "./MsgSigner";
 import { EncryptedMemoV1 } from "./EncryptedMemo";
-import { flattenStream, gatherStream, mapStream } from "./export";
+import { flattenStream, gatherStream, mapPaginatedStream } from "./export";
 
 type Content = string;
 
@@ -26,7 +26,7 @@ export default class MemoClient {
       this.addr
     );
 
-    const memoPages = mapStream(
+    const memoPages = mapPaginatedStream(
       encryptedMemoStream,
       this.litClient.decrypt.bind(this.litClient)
     );
