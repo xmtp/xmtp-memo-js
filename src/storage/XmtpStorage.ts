@@ -3,7 +3,7 @@ import { MemoStorage } from "../MemoStorage";
 import { newWallet } from "../../test/helpers";
 import { fetcher, messageApi } from "@xmtp/proto";
 import { EncryptedMemoV1 } from "../EncryptedMemo";
-import { mapPaginatedStream } from "../export";
+import { mapPaginatedStream } from "../steamHelpers";
 
 export class XmtpStorage implements MemoStorage {
   client: Client;
