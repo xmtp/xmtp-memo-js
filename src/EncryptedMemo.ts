@@ -26,9 +26,7 @@ export class EncryptedMemoV1 {
     }).finish();
   }
 
-  static async fromBytes(
-    bytes: Uint8Array
-  ): Promise<EncryptedMemoV1 | undefined> {
+  static async fromBytes(bytes: Uint8Array): Promise<EncryptedMemoV1> {
     const obj = proto.EncryptedMemoV1.decode(bytes);
 
     return new EncryptedMemoV1(

@@ -32,7 +32,10 @@ function createBasePayloadV1(): PayloadV1 {
 }
 
 export const PayloadV1 = {
-  encode(message: PayloadV1, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: PayloadV1,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.fromAddr !== "") {
       writer.uint32(10).string(message.fromAddr);
     }
@@ -79,7 +82,9 @@ export const PayloadV1 = {
     return {
       fromAddr: isSet(object.fromAddr) ? String(object.fromAddr) : "",
       toAddr: isSet(object.toAddr) ? String(object.toAddr) : "",
-      encodedContent: isSet(object.encodedContent) ? String(object.encodedContent) : "",
+      encodedContent: isSet(object.encodedContent)
+        ? String(object.encodedContent)
+        : "",
       timestamp: isSet(object.timestamp) ? Number(object.timestamp) : 0,
     };
   },
@@ -88,12 +93,16 @@ export const PayloadV1 = {
     const obj: any = {};
     message.fromAddr !== undefined && (obj.fromAddr = message.fromAddr);
     message.toAddr !== undefined && (obj.toAddr = message.toAddr);
-    message.encodedContent !== undefined && (obj.encodedContent = message.encodedContent);
-    message.timestamp !== undefined && (obj.timestamp = Math.round(message.timestamp));
+    message.encodedContent !== undefined &&
+      (obj.encodedContent = message.encodedContent);
+    message.timestamp !== undefined &&
+      (obj.timestamp = Math.round(message.timestamp));
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<PayloadV1>, I>>(object: I): PayloadV1 {
+  fromPartial<I extends Exact<DeepPartial<PayloadV1>, I>>(
+    object: I
+  ): PayloadV1 {
     const message = createBasePayloadV1();
     message.fromAddr = object.fromAddr ?? "";
     message.toAddr = object.toAddr ?? "";
@@ -108,7 +117,10 @@ function createBaseMemoV1(): MemoV1 {
 }
 
 export const MemoV1 = {
-  encode(message: MemoV1, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MemoV1,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.encodedPayload.length !== 0) {
       writer.uint32(10).bytes(message.encodedPayload);
     }
@@ -141,8 +153,12 @@ export const MemoV1 = {
 
   fromJSON(object: any): MemoV1 {
     return {
-      encodedPayload: isSet(object.encodedPayload) ? bytesFromBase64(object.encodedPayload) : new Uint8Array(),
-      signature: isSet(object.signature) ? bytesFromBase64(object.signature) : new Uint8Array(),
+      encodedPayload: isSet(object.encodedPayload)
+        ? bytesFromBase64(object.encodedPayload)
+        : new Uint8Array(),
+      signature: isSet(object.signature)
+        ? bytesFromBase64(object.signature)
+        : new Uint8Array(),
     };
   },
 
@@ -150,10 +166,14 @@ export const MemoV1 = {
     const obj: any = {};
     message.encodedPayload !== undefined &&
       (obj.encodedPayload = base64FromBytes(
-        message.encodedPayload !== undefined ? message.encodedPayload : new Uint8Array(),
+        message.encodedPayload !== undefined
+          ? message.encodedPayload
+          : new Uint8Array()
       ));
     message.signature !== undefined &&
-      (obj.signature = base64FromBytes(message.signature !== undefined ? message.signature : new Uint8Array()));
+      (obj.signature = base64FromBytes(
+        message.signature !== undefined ? message.signature : new Uint8Array()
+      ));
     return obj;
   },
 
@@ -170,7 +190,10 @@ function createBaseSignature(): Signature {
 }
 
 export const Signature = {
-  encode(message: Signature, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: Signature,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.signature.length !== 0) {
       writer.uint32(10).bytes(message.signature);
     }
@@ -203,20 +226,29 @@ export const Signature = {
 
   fromJSON(object: any): Signature {
     return {
-      signature: isSet(object.signature) ? bytesFromBase64(object.signature) : new Uint8Array(),
-      signatureType: isSet(object.signatureType) ? Number(object.signatureType) : 0,
+      signature: isSet(object.signature)
+        ? bytesFromBase64(object.signature)
+        : new Uint8Array(),
+      signatureType: isSet(object.signatureType)
+        ? Number(object.signatureType)
+        : 0,
     };
   },
 
   toJSON(message: Signature): unknown {
     const obj: any = {};
     message.signature !== undefined &&
-      (obj.signature = base64FromBytes(message.signature !== undefined ? message.signature : new Uint8Array()));
-    message.signatureType !== undefined && (obj.signatureType = Math.round(message.signatureType));
+      (obj.signature = base64FromBytes(
+        message.signature !== undefined ? message.signature : new Uint8Array()
+      ));
+    message.signatureType !== undefined &&
+      (obj.signatureType = Math.round(message.signatureType));
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<Signature>, I>>(object: I): Signature {
+  fromPartial<I extends Exact<DeepPartial<Signature>, I>>(
+    object: I
+  ): Signature {
     const message = createBaseSignature();
     message.signature = object.signature ?? new Uint8Array();
     message.signatureType = object.signatureType ?? 0;
@@ -233,7 +265,10 @@ function createBaseEncryptedMemoV1(): EncryptedMemoV1 {
 }
 
 export const EncryptedMemoV1 = {
-  encode(message: EncryptedMemoV1, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: EncryptedMemoV1,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.encryptedString.length !== 0) {
       writer.uint32(10).bytes(message.encryptedString);
     }
@@ -272,7 +307,9 @@ export const EncryptedMemoV1 = {
 
   fromJSON(object: any): EncryptedMemoV1 {
     return {
-      encryptedString: isSet(object.encryptedString) ? bytesFromBase64(object.encryptedString) : new Uint8Array(),
+      encryptedString: isSet(object.encryptedString)
+        ? bytesFromBase64(object.encryptedString)
+        : new Uint8Array(),
       encryptedSymmetricKey: isSet(object.encryptedSymmetricKey)
         ? bytesFromBase64(object.encryptedSymmetricKey)
         : new Uint8Array(),
@@ -286,24 +323,34 @@ export const EncryptedMemoV1 = {
     const obj: any = {};
     message.encryptedString !== undefined &&
       (obj.encryptedString = base64FromBytes(
-        message.encryptedString !== undefined ? message.encryptedString : new Uint8Array(),
+        message.encryptedString !== undefined
+          ? message.encryptedString
+          : new Uint8Array()
       ));
     message.encryptedSymmetricKey !== undefined &&
       (obj.encryptedSymmetricKey = base64FromBytes(
-        message.encryptedSymmetricKey !== undefined ? message.encryptedSymmetricKey : new Uint8Array(),
+        message.encryptedSymmetricKey !== undefined
+          ? message.encryptedSymmetricKey
+          : new Uint8Array()
       ));
     message.accessControlConditions !== undefined &&
       (obj.accessControlConditions = base64FromBytes(
-        message.accessControlConditions !== undefined ? message.accessControlConditions : new Uint8Array(),
+        message.accessControlConditions !== undefined
+          ? message.accessControlConditions
+          : new Uint8Array()
       ));
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<EncryptedMemoV1>, I>>(object: I): EncryptedMemoV1 {
+  fromPartial<I extends Exact<DeepPartial<EncryptedMemoV1>, I>>(
+    object: I
+  ): EncryptedMemoV1 {
     const message = createBaseEncryptedMemoV1();
     message.encryptedString = object.encryptedString ?? new Uint8Array();
-    message.encryptedSymmetricKey = object.encryptedSymmetricKey ?? new Uint8Array();
-    message.accessControlConditions = object.accessControlConditions ?? new Uint8Array();
+    message.encryptedSymmetricKey =
+      object.encryptedSymmetricKey ?? new Uint8Array();
+    message.accessControlConditions =
+      object.accessControlConditions ?? new Uint8Array();
     return message;
   },
 };
@@ -352,16 +399,31 @@ function base64FromBytes(arr: Uint8Array): string {
   }
 }
 
-type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
+type Builtin =
+  | Date
+  | Function
+  | Uint8Array
+  | string
+  | number
+  | boolean
+  | undefined;
 
-export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
-  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
+export type DeepPartial<T> = T extends Builtin
+  ? T
+  : T extends Array<infer U>
+  ? Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U>
+  ? ReadonlyArray<DeepPartial<U>>
+  : T extends {}
+  ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+export type Exact<P, I extends P> = P extends Builtin
+  ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & {
+      [K in Exclude<keyof I, KeysOfUnion<P>>]: never;
+    };
 
 function longToNumber(long: Long): number {
   if (long.gt(Number.MAX_SAFE_INTEGER)) {

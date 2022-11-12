@@ -25,12 +25,7 @@ export class XmtpStorage implements MemoStorage {
     encryptedMemo: EncryptedMemoV1
   ): Promise<boolean> {
     const topic = this.buildTopic(addr);
-
     const bytes = await encryptedMemo.toBytes();
-    if (!bytes) {
-      throw new BadEncodeError();
-    }
-
     const resp = await this.client.apiClient.publish([
       {
         contentTopic: topic,
@@ -63,12 +58,7 @@ export class XmtpStorage implements MemoStorage {
     contentTopic,
   }: messageApi.Envelope): Promise<EncryptedMemoV1> {
     const bytes = fetcher.b64Decode(message as unknown as string);
-    const em = await EncryptedMemoV1.fromBytes(bytes);
-
-    if (!em) {
-      throw new BadDecodeError();
-    }
-    return em;
+    return await EncryptedMemoV1.fromBytes(bytes);
   }
 
   buildTopic(addr: string): string {

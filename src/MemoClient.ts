@@ -47,10 +47,6 @@ export default class MemoClient {
     );
 
     const bytes = await memo.toBytes();
-    if (!bytes) {
-      return false;
-    }
-
     const encryptedMemo = await this.encryptWithLitForAccount(bytes, toAddr);
     return this.storage.postEncryptedMemo(toAddr, encryptedMemo);
   }

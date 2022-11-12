@@ -7,9 +7,6 @@ import { XmtpStorage } from "../src/storage/XmtpStorage";
 
 export function newWallet(): Wallet {
   const key = PrivateKey.generate();
-  if (!key.secp256k1) {
-    throw new Error("invalid key");
-  }
   return new Wallet(key.secp256k1.bytes);
 }
 
@@ -49,10 +46,6 @@ export async function signWithKey(
 
 export async function signWithRandomKey(bytes: Uint8Array): Promise<AuthSig> {
   const key = PrivateKey.generate();
-  if (!key.secp256k1) {
-    throw new Error("invalid key");
-  }
-
   return await signWithKey(bytes, key);
 }
 

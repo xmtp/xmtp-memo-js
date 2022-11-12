@@ -27,10 +27,6 @@ export class MockSigner implements MsgSigner {
   }
 
   async signBytes(bytes: Uint8Array): Promise<Signature> {
-    if (!this.key.secp256k1) {
-      throw new Error("invalid key");
-    }
-
     const authSign = await this.genAuthSig(bytes);
 
     return new Signature({

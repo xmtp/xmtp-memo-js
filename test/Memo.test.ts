@@ -28,12 +28,7 @@ describe("Memo", function () {
       signer
     );
 
-    const d = await m1.toBytes();
-
-    if (!d) {
-      throw new Error("Bad Encode");
-    }
-    const m2 = await MemoV1.fromBytes(d);
+    const m2 = await MemoV1.fromBytes(await m1.toBytes());
     assert.deepEqual(m2?.payload, m1.payload);
   });
 });
