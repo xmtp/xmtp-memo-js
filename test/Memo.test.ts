@@ -2,7 +2,6 @@ import assert from "assert";
 
 import { MemoV1 } from "../src";
 import { PayloadV1 } from "../src/Memo";
-import { MockSigner } from "../src/MsgSigner";
 
 describe("Memo", function () {
   it("payload roundtrip", async function () {
@@ -17,18 +16,5 @@ describe("Memo", function () {
     const q = PayloadV1.fromBytes(d);
 
     assert.deepEqual(p, q);
-  });
-
-  it("memo roundtrip", async function () {
-    const signer = new MockSigner();
-    const m1 = await MemoV1.create(
-      "0x001",
-      await signer.getAddress(),
-      "Hello",
-      signer
-    );
-
-    const m2 = await MemoV1.fromBytes(await m1.toBytes());
-    assert.deepEqual(m2?.payload, m1.payload);
   });
 });

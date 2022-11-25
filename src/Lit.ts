@@ -27,10 +27,11 @@ export default class Lit {
 
   constructor(authSig?: AuthSig) {
     this.authSig = authSig; // AuthSig is passed in at initialization to ensure the caller is controlling when signatures are requested from the user
+    this.client = this.client = new LitJsSdk.LitNodeClient({ debug: false });
   }
 
-  async connect(): Promise<void> {
-    this.client = new LitJsSdk.LitNodeClient({ debug: false });
+  // Connecting on initialization is not sufficient to ensure the Lit nodes are connected.
+  async ensureConnected(): Promise<void> {
     await this.client.connect();
   }
 
@@ -38,9 +39,7 @@ export default class Lit {
     bytes: Uint8Array,
     accessControlConditions: Acc
   ): Promise<EncryptedMemoV1> {
-    if (!this.client) {
-      await this.connect();
-    }
+    await this.ensureConnected();
 
     const chain = this.chain;
     const authSig = await this.getAuthSig();
@@ -69,9 +68,7 @@ export default class Lit {
   }
 
   async decrypt(encryptedMemo: EncryptedMemoV1): Promise<MemoV1> {
-    if (!this.client) {
-      await this.connect();
-    }
+    await this.ensureConnected();
 
     const chain = this.chain;
 
@@ -109,7 +106,7 @@ export default class Lit {
     return JSON.parse(rendered);
   }
 
-  accessControllConditionTemplate_userAddr(): string {
+  accTemplate_userAddr(): string {
     const acc = [
       {
         contractAddress: "",

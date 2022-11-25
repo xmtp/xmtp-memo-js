@@ -1,8 +1,9 @@
-import { Wallet } from "ethers";
+import { Signer, Wallet } from "ethers";
 import { Client, PrivateKey } from "@xmtp/xmtp-js";
+
 import { AuthSig } from "../src/AuthSig";
 import { MemoClient } from "../src";
-import { MockSigner } from "../src/MsgSigner";
+import { ClientSigner } from "../src/MemoSigner";
 import { XmtpStorage } from "../src/storage/XmtpStorage";
 
 export function newWallet(): Wallet {
@@ -14,15 +15,32 @@ export function createTestClient(): Promise<Client> {
   return Client.create(newWallet(), { env: "dev" });
 }
 
-export async function createTestMemoClient(): Promise<MemoClient> {
-  // Place holder for wallet signatures
-  const wallet = new MockSigner();
-  const msgSigner = new MockSigner();
-  const storage = await XmtpStorage.create({ env: "dev" });
+export async function genAuthSig(
+  signer: Signer,
+  bytes: Uint8Array
+): Promise<AuthSig> {
+  const signature = await signer.signMessage(bytes);
+
+  return {
+    sig: signature,
+    derivedVia: "web3.eth.personal.sign",
+    signedMessage: new TextDecoder().decode(bytes),
+    address: await signer.getAddress(),
+  };
+}
+
+export async function createTestMemoClient(
+  overrideWallet?: Wallet
+): Promise<MemoClient> {
+  const wallet = overrideWallet ?? newWallet();
+
+  const c = await Client.create(wallet, { env: "local" });
+  const storage = await XmtpStorage.create(c);
 
   const client = new MemoClient(
-    await msgSigner.genAuthSig(new TextEncoder().encode("AUTH")),
-    msgSigner,
+    await genAuthSig(wallet, new TextEncoder().encode("AUTH")),
+    c,
+    await ClientSigner.create(c),
     storage
   );
 

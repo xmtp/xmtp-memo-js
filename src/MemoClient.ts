@@ -1,22 +1,31 @@
-import { MemoV1 } from "./Memo";
-import { MemoStorage } from "./MemoStorage";
-import Lit from "./Lit";
+import { Client } from "@xmtp/xmtp-js";
+
 import { AuthSig } from "./AuthSig";
-import { MsgSigner } from "./MsgSigner";
 import { EncryptedMemoV1 } from "./EncryptedMemo";
-import { flattenStream, gatherStream, mapPaginatedStream } from "./export";
+import Lit from "./Lit";
+import { MemoV1 } from "./Memo";
+import { MemoSigner } from "./MemoSigner";
+import { MemoStorage } from "./MemoStorage";
+import { flattenStream, gatherStream, mapPaginatedStream } from "./steamUtils";
 
 type Content = string;
 
 export default class MemoClient {
   litClient;
-  msgSigner;
+  xmtpClient;
+  memoSigner;
   storage;
   addr;
 
-  constructor(authSig: AuthSig, msgSigner: MsgSigner, storage: MemoStorage) {
+  constructor(
+    authSig: AuthSig,
+    xmtpClient: Client,
+    memoSigner: MemoSigner,
+    storage: MemoStorage
+  ) {
     this.litClient = new Lit(authSig);
-    this.msgSigner = msgSigner;
+    this.xmtpClient = xmtpClient;
+    this.memoSigner = memoSigner;
     this.storage = storage;
     this.addr = authSig.address;
   }
@@ -30,8 +39,8 @@ export default class MemoClient {
       encryptedMemoStream,
       this.litClient.decrypt.bind(this.litClient)
     );
-    const memos = flattenStream(memoPages);
-    return gatherStream(memos);
+    const memos = await flattenStream(memoPages);
+    return await gatherStream(memos);
   }
 
   async listSentMemos(): Promise<MemoV1[]> {
@@ -43,7 +52,7 @@ export default class MemoClient {
       toAddr,
       this.addr,
       content,
-      this.msgSigner
+      this.memoSigner
     );
 
     const bytes = await memo.toBytes();
@@ -51,13 +60,11 @@ export default class MemoClient {
     return this.storage.postEncryptedMemo(toAddr, encryptedMemo);
   }
 
-  private async encryptWithLitForAccount(
+  public async encryptWithLitForAccount(
     bytes: Uint8Array,
     toAddr: string
   ): Promise<EncryptedMemoV1> {
-    const accTemplate =
-      this.litClient.accessControllConditionTemplate_userAddr();
-
+    const accTemplate = this.litClient.accTemplate_userAddr();
     const acc = this.litClient.renderAccTemplate(accTemplate, {
       userAddress: toAddr,
     });

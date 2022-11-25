@@ -1,4 +1,3 @@
-import { ecrecover } from "ethereumjs-util";
 import { utils } from "ethers";
 
 export type AuthSig = {

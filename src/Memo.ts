@@ -1,9 +1,10 @@
-import { MockSigner, MsgSigner } from "./MsgSigner";
+import { MemoSigner } from "./MemoSigner";
 import * as proto from "./proto/memo";
-import Signature from "./Signature";
+import SignatureObj from "./MemoSignature";
 
-class BadSignatureError extends Error {}
+class AddressMismatchError extends Error {}
 class NoSignerError extends Error {}
+class SignatureMismatchError extends Error {}
 
 export class PayloadV1 implements proto.PayloadV1 {
   fromAddr: string;
@@ -34,9 +35,9 @@ export class PayloadV1 implements proto.PayloadV1 {
 
 export class MemoV1 {
   payload: PayloadV1;
-  signer?: MsgSigner;
+  signer?: MemoSigner;
 
-  constructor(payload: PayloadV1, signFunc?: MsgSigner) {
+  constructor(payload: PayloadV1, signFunc?: MemoSigner) {
     this.payload = payload;
     this.signer = signFunc;
   }
@@ -45,7 +46,7 @@ export class MemoV1 {
     toAddr: string,
     fromAddr: string,
     content: string,
-    signer: MsgSigner
+    signer: MemoSigner
   ): Promise<MemoV1> {
     const payload = new PayloadV1({
       fromAddr,
@@ -64,8 +65,8 @@ export class MemoV1 {
       throw new NoSignerError();
     }
 
-    const signature = await this.signer.signBytes(encodedPayload);
-    const encodedSignature = signature.toBytes();
+    const sigObj = await this.signer.signBytes(encodedPayload);
+    const encodedSignature = sigObj.toBytes();
 
     return proto.MemoV1.encode({
       encodedPayload: encodedPayload,
@@ -76,11 +77,21 @@ export class MemoV1 {
   static async fromBytes(bytes: Uint8Array): Promise<MemoV1> {
     const obj = proto.MemoV1.decode(bytes);
     const payload = PayloadV1.fromBytes(obj.encodedPayload);
-    const signature = Signature.fromBytes(obj.signature);
+    const memoSignature = SignatureObj.fromBytes(obj.signature);
 
-    if (!signature.verify(payload.fromAddr, obj.encodedPayload)) {
-      throw new BadSignatureError();
+    // Ensure Memo is valid prior to instantiating it
+    if (!memoSignature.verify(obj.encodedPayload)) {
+      throw new SignatureMismatchError();
     }
+
+    // Ensure addesses are correct
+    const signingAddress = await memoSignature.signingKey.getAddress();
+    if (signingAddress !== payload.fromAddr) {
+      throw new AddressMismatchError(
+        `Sign:${signingAddress} Stated:${payload.fromAddr}`
+      );
+    }
+
     return new MemoV1(payload);
   }
 }

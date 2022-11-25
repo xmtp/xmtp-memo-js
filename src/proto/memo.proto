@@ -14,9 +14,10 @@ message MemoV1 {
   bytes signature = 2;
 }
 
-message Signature {
+message MemoSignature {
   bytes signature = 1;
   uint32 signatureType = 2;
+  bytes signingKey = 3;
 }
 
 message EncryptedMemoV1 {

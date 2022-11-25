@@ -1,4 +1,10 @@
-export function bytesToHex(bytes: Uint8Array): string {
+import { Signature } from "@xmtp/xmtp-js";
+
+export function bytesToHex(bytes: Uint8Array | undefined): string {
+  if (!bytes) {
+    return "Undefined";
+  }
+
   return Buffer.from(bytes).toString("hex");
 }
 
@@ -12,4 +18,14 @@ export function hexToBytes(s: string): Uint8Array {
     bytes[i] = Number.parseInt(s.slice(j, j + 2), 16);
   }
   return bytes;
+}
+
+export function sigToStr(signature: Signature) {
+  return `Signature {
+    ecdsaCompact: {
+      bytes: ${bytesToHex(signature.ecdsaCompact?.bytes)}
+      recovery: ${signature.ecdsaCompact?.recovery}
+    }
+  }`;
+  return signature;
 }

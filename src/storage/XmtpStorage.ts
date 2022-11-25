@@ -3,7 +3,7 @@ import { MemoStorage } from "../MemoStorage";
 import { newWallet } from "../../test/helpers";
 import { fetcher, messageApi } from "@xmtp/proto";
 import { EncryptedMemoV1 } from "../EncryptedMemo";
-import { mapPaginatedStream } from "../steamHelpers";
+import { mapPaginatedStream } from "../steamUtils";
 
 export class XmtpStorage implements MemoStorage {
   client: Client;
@@ -12,8 +12,7 @@ export class XmtpStorage implements MemoStorage {
     this.client = client;
   }
 
-  static async create(opts: Partial<ClientOptions>) {
-    const client = await Client.create(newWallet(), opts);
+  static async create(client: Client) {
     return new XmtpStorage(client);
   }
 
@@ -40,7 +39,7 @@ export class XmtpStorage implements MemoStorage {
       this.client.apiClient.queryIteratePages(
         { contentTopics: [this.buildTopic(addr)] },
         {
-          direction: messageApi.SortDirection.SORT_DIRECTION_DESCENDING,
+          direction: messageApi.SortDirection.SORT_DIRECTION_ASCENDING,
           pageSize: 100,
         }
       ),
@@ -50,10 +49,7 @@ export class XmtpStorage implements MemoStorage {
     return memoStream;
   }
 
-  async decode({
-    message,
-    contentTopic,
-  }: messageApi.Envelope): Promise<EncryptedMemoV1> {
+  async decode({ message }: messageApi.Envelope): Promise<EncryptedMemoV1> {
     const bytes = fetcher.b64Decode(message as unknown as string);
     return await EncryptedMemoV1.fromBytes(bytes);
   }
