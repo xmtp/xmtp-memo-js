@@ -1,19 +1,19 @@
-import { Acc } from "./Lit";
+import { Acc, AccTemplate } from "./Lit";
 import * as proto from "./proto/memo";
 
 export class EncryptedMemoV1 {
   encryptedString: Uint8Array;
   encryptedSymmetricKey: Uint8Array;
-  accessControlConditions: Acc;
+  accTemplate: AccTemplate;
 
   constructor(
     encryptedString: Uint8Array,
     encryptedSymmetricKey: Uint8Array,
-    accessControlConditions: Acc
+    accTemplate: string
   ) {
     this.encryptedString = encryptedString;
     this.encryptedSymmetricKey = encryptedSymmetricKey;
-    this.accessControlConditions = accessControlConditions;
+    this.accTemplate = accTemplate;
   }
 
   async toBytes(): Promise<Uint8Array> {
@@ -21,7 +21,7 @@ export class EncryptedMemoV1 {
       encryptedString: this.encryptedString,
       encryptedSymmetricKey: this.encryptedSymmetricKey,
       accessControlConditions: new TextEncoder().encode(
-        JSON.stringify(this.accessControlConditions)
+        JSON.stringify(this.accTemplate)
       ),
     }).finish();
   }

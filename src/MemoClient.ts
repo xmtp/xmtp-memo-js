@@ -30,17 +30,20 @@ export default class MemoClient {
     this.addr = authSig.address;
   }
 
-  async listMemos(): Promise<MemoV1[]> {
+  async listMemos(): Promise<AsyncGenerator<MemoV1>> {
     const encryptedMemoStream = await this.storage.fetchEncryptedMemos(
       this.addr
     );
 
     const memoPages = mapPaginatedStream(
       encryptedMemoStream,
-      this.litClient.decrypt.bind(this.litClient)
+      this.litClient.decryptMemo.bind(this.litClient)
     );
-    const memos = await flattenStream(memoPages);
-    return await gatherStream(memos);
+    return flattenStream(memoPages);
+  }
+
+  async listAllMemos(): Promise<MemoV1[]> {
+    return await gatherStream(await this.listMemos());
   }
 
   async listSentMemos(): Promise<MemoV1[]> {
@@ -55,20 +58,7 @@ export default class MemoClient {
       this.memoSigner
     );
 
-    const bytes = await memo.toBytes();
-    const encryptedMemo = await this.encryptWithLitForAccount(bytes, toAddr);
+    const encryptedMemo = await this.litClient.encryptMemo(memo);
     return this.storage.postEncryptedMemo(toAddr, encryptedMemo);
-  }
-
-  public async encryptWithLitForAccount(
-    bytes: Uint8Array,
-    toAddr: string
-  ): Promise<EncryptedMemoV1> {
-    const accTemplate = this.litClient.accTemplate_userAddr();
-    const acc = this.litClient.renderAccTemplate(accTemplate, {
-      userAddress: toAddr,
-    });
-
-    return await this.litClient.encryptBytes(bytes, acc);
   }
 }

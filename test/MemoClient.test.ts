@@ -9,7 +9,7 @@ describe("MemoClient", function () {
     const content = "Test";
     await amal.sendMemo(bola.addr, content);
 
-    for (const memo of await bola.listMemos()) {
+    for (const memo of await bola.listAllMemos()) {
       assert.equal(memo.payload.encodedContent, content);
     }
   });

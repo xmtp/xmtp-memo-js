@@ -19,14 +19,22 @@ export interface Acc {
   returnValueTest: any;
 }
 
+export type AccTemplate = string;
+
+export interface LitEncryptedTuple {
+  key: Uint8Array;
+  contents: Uint8Array;
+}
+
 export default class Lit {
   client: any; // Types do not exist fot LitNodeClient yet
   authSig;
 
-  chain = "ethereum";
+  static chain = "ethereum";
 
+  // AuthSig is passed in at initialization to ensure the caller is controlling when signatures are requested from the user
   constructor(authSig?: AuthSig) {
-    this.authSig = authSig; // AuthSig is passed in at initialization to ensure the caller is controlling when signatures are requested from the user
+    this.authSig = authSig;
     this.client = this.client = new LitJsSdk.LitNodeClient({ debug: false });
   }
 
@@ -35,18 +43,44 @@ export default class Lit {
     await this.client.connect();
   }
 
-  async encryptBytes(
-    bytes: Uint8Array,
-    accessControlConditions: Acc
-  ): Promise<EncryptedMemoV1> {
+  async encryptMemo(memo: MemoV1): Promise<EncryptedMemoV1> {
+    const accTemplate = Lit.accTemplate_userAddr();
+    const acc = this.renderAccTemplate(accTemplate, {
+      userAddress: memo.payload.toAddr,
+    });
+
+    const { key, contents } = await this.encryptBytes(
+      await memo.toBytes(),
+      acc
+    );
+
+    return new EncryptedMemoV1(contents, key, accTemplate);
+  }
+
+  async decryptMemo(encryptedMemo: EncryptedMemoV1): Promise<MemoV1> {
+    await this.ensureConnected();
+    const authSig = await this.getAuthSig();
+    const acc = this.renderAccTemplate(encryptedMemo.accTemplate, {
+      userAddress: authSig.address,
+    });
+
+    return await MemoV1.fromBytes(
+      await this.decryptBytes(
+        encryptedMemo.encryptedSymmetricKey,
+        encryptedMemo.encryptedString,
+        acc
+      )
+    );
+  }
+
+  // Bytes are encrypted with a symmetric key. The encryption key is then stored in the Lit network
+  // so it can be retrieved by the recipient at a future date.
+  async encryptBytes(bytes: Uint8Array, acc: Acc): Promise<LitEncryptedTuple> {
     await this.ensureConnected();
 
-    const chain = this.chain;
-    const authSig = await this.getAuthSig();
-
-    const stringEncodedData = LitJsSdk.uint8arrayToString(bytes, "base64");
+    // Encrypt bytes using a symmetricKey
     const { encryptedString, symmetricKey } = await LitJsSdk.encryptString(
-      stringEncodedData
+      LitJsSdk.uint8arrayToString(bytes, "base64")
     );
 
     const encryptedContentsBuffer = await (
@@ -54,64 +88,56 @@ export default class Lit {
     ).arrayBuffer();
 
     const encryptedSymmetricKey = await this.client.saveEncryptionKey({
-      accessControlConditions: accessControlConditions,
+      accessControlConditions: acc,
       symmetricKey,
-      authSig,
-      chain,
+      authSig: await this.getAuthSig(),
+      chain: Lit.chain,
     });
 
-    return new EncryptedMemoV1(
-      new Uint8Array(encryptedContentsBuffer),
-      encryptedSymmetricKey,
-      accessControlConditions
-    );
+    return {
+      key: encryptedSymmetricKey,
+      contents: new Uint8Array(encryptedContentsBuffer),
+    };
   }
 
-  async decrypt(encryptedMemo: EncryptedMemoV1): Promise<MemoV1> {
-    await this.ensureConnected();
-
-    const chain = this.chain;
-
-    var authSig = await this.getAuthSig();
+  async decryptBytes(
+    key: Uint8Array,
+    contents: Uint8Array,
+    acc: Acc
+  ): Promise<Uint8Array> {
     const symmetricKey = await this.client.getEncryptionKey({
-      accessControlConditions: encryptedMemo.accessControlConditions,
-      toDecrypt: bytesToHex(encryptedMemo.encryptedSymmetricKey),
-      chain,
-      authSig,
+      accessControlConditions: acc,
+      toDecrypt: bytesToHex(key),
+      chain: Lit.chain,
+      authSig: await this.getAuthSig(),
     });
 
-    const blob = new Blob([encryptedMemo.encryptedString], {
+    const blob = new Blob([contents], {
       type: "application/octet-stream",
     });
 
-    const decryptedString = await LitJsSdk.decryptString(blob, symmetricKey);
-    const decryptedBytes = LitJsSdk.uint8arrayFromString(
-      decryptedString,
+    return LitJsSdk.uint8arrayFromString(
+      await LitJsSdk.decryptString(blob, symmetricKey),
       "base64"
     );
-
-    const memo = await MemoV1.fromBytes(decryptedBytes);
-    return memo;
   }
 
   async getAuthSig(): Promise<AuthSig> {
     return (
       this.authSig ??
-      (await LitJsSdk.checkAndSignAuthMessage({ chain: this.chain }))
+      (await LitJsSdk.checkAndSignAuthMessage({ chain: Lit.chain }))
     );
   }
 
-  renderAccTemplate(accTemplate: string, view: AccView): Acc {
-    const rendered = render(accTemplate, view);
-    return JSON.parse(rendered);
-  }
-
-  accTemplate_userAddr(): string {
+  // AccessControlConditions are included in the EncryptedMemo as it is required to
+  // retrieve the encryption key, and may change in the future. As this data must
+  // be included in cleartext, a template is included so that the ACC contains no PII.
+  static accTemplate_userAddr(): AccTemplate {
     const acc = [
       {
         contractAddress: "",
         standardContractType: "",
-        chain: this.chain,
+        chain: Lit.chain,
         method: "",
         parameters: [":userAddress"],
         returnValueTest: {
@@ -122,5 +148,11 @@ export default class Lit {
     ];
 
     return JSON.stringify(acc);
+  }
+
+  // Populate AccTemplates with actual values
+  renderAccTemplate(accTemplate: string, view: AccView): Acc {
+    const rendered = render(accTemplate, view);
+    return JSON.parse(rendered);
   }
 }
