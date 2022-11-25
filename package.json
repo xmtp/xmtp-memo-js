@@ -63,7 +63,7 @@
     "@lit-protocol/sdk-browser": "^1.1.234",
     "@types/mustache": "^4.2.1",
     "@xmtp/proto": "3.4.0",
-    "@xmtp/xmtp-js": "^7.1.1",
+    "@xmtp/xmtp-js": "github:xmtp/xmtp-js#jazzz/memo-integration",
     "axios": "^1.1.3",
     "crypto": "^1.0.1",
     "dotenv": "^16.0.3",
