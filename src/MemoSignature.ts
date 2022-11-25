@@ -7,8 +7,6 @@ export enum SignatureType {
   ECDSACompact = 1,
 }
 
-// export type ContactBundle = PublicKeyBundle | SignedPublicKeyBundle;
-
 export default class MemoSignature {
   signature: Signature;
   signatureType: SignatureType;

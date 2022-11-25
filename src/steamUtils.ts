@@ -1,5 +1,7 @@
 export type Mapper<In, Out> = (val: In) => Promise<Out>;
 
+// Takes an async generator returning pages of an arbitrary type and converts to an async
+// generator returning pages of an arbitrary type using a mapper function
 export async function* mapPaginatedStream<In, Out>(
   gen: AsyncGenerator<In[]>,
   mapper: Mapper<In, Out>
@@ -22,6 +24,7 @@ export async function* mapPaginatedStream<In, Out>(
   }
 }
 
+// Takes an async generator of pages/arrays and returns a flattened collection.
 export async function* flattenStream<In>(gen: AsyncGenerator<In[]>) {
   for await (const page of gen) {
     for (const item of page) {
@@ -30,6 +33,7 @@ export async function* flattenStream<In>(gen: AsyncGenerator<In[]>) {
   }
 }
 
+// Create an array of elements from an async stream.
 export async function gatherStream<In>(gen: AsyncIterable<In>): Promise<In[]> {
   const out: In[] = [];
   for await (const item of gen) {
