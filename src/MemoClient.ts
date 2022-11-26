@@ -1,12 +1,12 @@
 import { Client } from "@xmtp/xmtp-js";
 
-import { AuthSig } from "./AuthSig";
+import { AuthSig } from "./crypto/AuthSig";
 import { EncryptedMemoV1 } from "./EncryptedMemo";
 import Lit from "./Lit";
 import { MemoV1 } from "./Memo";
-import { MemoSigner } from "./MemoSigner";
-import { MemoStorage } from "./MemoStorage";
-import { flattenStream, gatherStream, mapPaginatedStream } from "./steamUtils";
+import { MemoSigner } from "./crypto/MemoSigner";
+import { MemoStorage } from "./storage/MemoStorage";
+import { flattenStream, gatherStream, mapPaginatedStream } from "./utils";
 
 type Content = string;
 

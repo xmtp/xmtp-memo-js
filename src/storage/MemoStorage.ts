@@ -1,4 +1,4 @@
-import { EncryptedMemoV1 } from "./EncryptedMemo";
+import { EncryptedMemoV1 } from "../EncryptedMemo";
 
 export abstract class MemoStorage {
   abstract fetchEncryptedMemos(

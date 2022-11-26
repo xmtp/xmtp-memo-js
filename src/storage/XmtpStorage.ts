@@ -1,9 +1,9 @@
 import { Client, ClientOptions } from "@xmtp/xmtp-js";
-import { MemoStorage } from "../MemoStorage";
+import { MemoStorage } from "./MemoStorage";
 import { newWallet } from "../../test/helpers";
 import { fetcher, messageApi } from "@xmtp/proto";
 import { EncryptedMemoV1 } from "../EncryptedMemo";
-import { mapPaginatedStream } from "../steamUtils";
+import { mapPaginatedStream } from "../utils";
 
 export class XmtpStorage implements MemoStorage {
   client: Client;

@@ -1,9 +1,9 @@
 import { Signer, Wallet } from "ethers";
 import { Client, PrivateKey } from "@xmtp/xmtp-js";
 
-import { AuthSig } from "../src/AuthSig";
+import { AuthSig } from "../src/crypto/AuthSig";
 import { MemoClient } from "../src";
-import { ClientSigner } from "../src/MemoSigner";
+import { ClientSigner } from "../src/crypto/MemoSigner";
 import { XmtpStorage } from "../src/storage/XmtpStorage";
 
 export function newWallet(): Wallet {

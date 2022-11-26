@@ -1,6 +1,6 @@
 import { Client } from "@xmtp/xmtp-js";
 
-import MemoSignature, { SignatureType } from "./MemoSignature";
+import { MemoSignature, SignatureType } from "./MemoSignature";
 import { SignerKey } from "./SignerKey";
 
 export abstract class MemoSigner {

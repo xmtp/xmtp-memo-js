@@ -1,13 +1,13 @@
 import { Signature } from "@xmtp/xmtp-js";
 
-import * as proto from "./proto/memo";
+import * as proto from "../proto/memo";
 import { SignerKey } from "./SignerKey";
 
 export enum SignatureType {
   ECDSACompact = 1,
 }
 
-export default class MemoSignature {
+export class MemoSignature {
   signature: Signature;
   signatureType: SignatureType;
   signingKey: SignerKey;

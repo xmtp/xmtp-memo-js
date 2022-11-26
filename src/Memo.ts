@@ -1,6 +1,6 @@
-import { MemoSigner } from "./MemoSigner";
+import { MemoSigner } from "./crypto/MemoSigner";
 import * as proto from "./proto/memo";
-import SignatureObj from "./MemoSignature";
+import { MemoSignature } from "./crypto/MemoSignature";
 
 class AddressMismatchError extends Error {}
 class NoSignerError extends Error {}
@@ -77,7 +77,7 @@ export class MemoV1 {
   static async fromBytes(bytes: Uint8Array): Promise<MemoV1> {
     const obj = proto.MemoV1.decode(bytes);
     const payload = PayloadV1.fromBytes(obj.encodedPayload);
-    const memoSignature = SignatureObj.fromBytes(obj.signature);
+    const memoSignature = MemoSignature.fromBytes(obj.signature);
 
     // Ensure Memo is valid prior to instantiating it
     if (!memoSignature.verify(obj.encodedPayload)) {

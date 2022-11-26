@@ -1,7 +1,7 @@
 import LitJsSdk from "@lit-protocol/sdk-browser";
 import { Blob } from "buffer";
 import { render } from "mustache";
-import { AuthSig } from "./AuthSig";
+import { AuthSig } from "./crypto/AuthSig";
 import { EncryptedMemoV1 } from "./EncryptedMemo";
 import { MemoV1 } from "./Memo";
 import { bytesToHex } from "./utils";
