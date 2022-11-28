@@ -40,7 +40,7 @@ export async function createTestMemoClient(
   const storage = await XmtpStorage.create(c);
 
   const siweMessage = new SiweMessage({
-    domain: "https://testcases.xmtp.org",
+    domain: "testing.xmtp.com",
     address: wallet.address,
     statement: "This is a signature used for testing",
     uri: "https://testcases.xmtp.org",
