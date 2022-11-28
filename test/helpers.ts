@@ -1,8 +1,12 @@
-import { Signer, Wallet } from "ethers";
+import { Wallet } from "ethers";
 import { Client, PrivateKey } from "@xmtp/xmtp-js";
 import { SiweMessage } from "lit-siwe";
 
-import { AuthSig, requiredSiweResource } from "../src/crypto/AuthSig";
+import {
+  AuthSig,
+  genAuthSig,
+  requiredSiweResource,
+} from "../src/crypto/AuthSig";
 import { MemoClient } from "../src";
 import { ClientSigner } from "../src/crypto/MemoSigner";
 import { XmtpStorage } from "../src/storage/XmtpStorage";
@@ -16,29 +20,7 @@ export function createTestClient(): Promise<Client> {
   return Client.create(newWallet(), { env: "dev" });
 }
 
-export async function genAuthSig(
-  signer: Signer,
-  text: string
-): Promise<AuthSig> {
-  const bytes = new TextEncoder().encode(text);
-  const signature = await signer.signMessage(bytes);
-
-  return {
-    sig: signature,
-    derivedVia: "web3.eth.personal.sign",
-    signedMessage: text,
-    address: await signer.getAddress(),
-  };
-}
-
-export async function createTestMemoClient(
-  overrideWallet?: Wallet
-): Promise<MemoClient> {
-  const wallet = overrideWallet ?? newWallet();
-
-  const c = await Client.create(wallet, { env: "local" });
-  const storage = await XmtpStorage.create(c);
-
+export async function createTestAuthSig(wallet: Wallet): Promise<AuthSig> {
   const siweMessage = new SiweMessage({
     domain: "testing.xmtp.com",
     address: wallet.address,
@@ -49,10 +31,19 @@ export async function createTestMemoClient(
     resources: [requiredSiweResource()],
   });
 
-  const authSig = await genAuthSig(wallet, siweMessage.prepareMessage());
+  return await genAuthSig(wallet, siweMessage.prepareMessage());
+}
+
+export async function createTestMemoClient(
+  overrideWallet?: Wallet
+): Promise<MemoClient> {
+  const wallet = overrideWallet ?? newWallet();
+
+  const c = await Client.create(wallet, { env: "local" });
+  const storage = await XmtpStorage.create(c);
 
   const client = new MemoClient(
-    authSig,
+    await createTestAuthSig(wallet),
     c,
     await ClientSigner.create(c),
     storage

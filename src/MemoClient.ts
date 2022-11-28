@@ -3,7 +3,7 @@ import { Client } from "@xmtp/xmtp-js";
 import { AuthSig, requiredSiweResource } from "./crypto/AuthSig";
 import Lit from "./Lit";
 import { MemoV1 } from "./Memo";
-import { MemoSigner } from "./crypto/MemoSigner";
+import { ClientSigner, MemoSigner } from "./crypto/MemoSigner";
 import { MemoStorage } from "./storage/MemoStorage";
 import {
   filterStream,
@@ -11,6 +11,7 @@ import {
   gatherStream,
   mapPaginatedStream,
 } from "./utils";
+import { XmtpStorage } from "./storage/XmtpStorage";
 
 type Content = string;
 
@@ -40,6 +41,18 @@ export default class MemoClient {
     this.memoSigner = memoSigner;
     this.storage = storage;
     this.addr = authSig.address;
+  }
+
+  // to create a MemoClient a valid authSig is needed.
+  static async create(authSig: AuthSig, client: Client): Promise<MemoClient> {
+    const storage = await XmtpStorage.create(client);
+
+    return new MemoClient(
+      authSig,
+      client,
+      await ClientSigner.create(client),
+      storage
+    );
   }
 
   async listMemos(): Promise<AsyncGenerator<MemoV1>> {
