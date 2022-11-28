@@ -1,7 +1,8 @@
 import { Signer, Wallet } from "ethers";
 import { Client, PrivateKey } from "@xmtp/xmtp-js";
+import { SiweMessage } from "lit-siwe";
 
-import { AuthSig } from "../src/crypto/AuthSig";
+import { AuthSig, requiredSiweResource } from "../src/crypto/AuthSig";
 import { MemoClient } from "../src";
 import { ClientSigner } from "../src/crypto/MemoSigner";
 import { XmtpStorage } from "../src/storage/XmtpStorage";
@@ -17,14 +18,15 @@ export function createTestClient(): Promise<Client> {
 
 export async function genAuthSig(
   signer: Signer,
-  bytes: Uint8Array
+  text: string
 ): Promise<AuthSig> {
+  const bytes = new TextEncoder().encode(text);
   const signature = await signer.signMessage(bytes);
 
   return {
     sig: signature,
     derivedVia: "web3.eth.personal.sign",
-    signedMessage: new TextDecoder().decode(bytes),
+    signedMessage: text,
     address: await signer.getAddress(),
   };
 }
@@ -37,8 +39,20 @@ export async function createTestMemoClient(
   const c = await Client.create(wallet, { env: "local" });
   const storage = await XmtpStorage.create(c);
 
+  const siweMessage = new SiweMessage({
+    domain: "https://testcases.xmtp.org",
+    address: wallet.address,
+    statement: "This is a signature used for testing",
+    uri: "https://testcases.xmtp.org",
+    version: "1",
+    chainId: 1,
+    resources: [requiredSiweResource()],
+  });
+
+  const authSig = await genAuthSig(wallet, siweMessage.prepareMessage());
+
   const client = new MemoClient(
-    await genAuthSig(wallet, new TextEncoder().encode("AUTH")),
+    authSig,
     c,
     await ClientSigner.create(c),
     storage

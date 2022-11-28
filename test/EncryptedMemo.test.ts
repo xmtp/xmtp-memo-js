@@ -8,7 +8,7 @@ describe("Encrypted Memo", function () {
     const s = new TextEncoder().encode("message");
     const k = new TextEncoder().encode("keys");
 
-    const em = new EncryptedMemoV1(s, k, Lit.accTemplate_userAddr());
+    const em = new EncryptedMemoV1(s, k, Lit.accTemplate_siweAddr());
     const bytes = await em.toBytes();
     const em1 = await EncryptedMemoV1.fromBytes(bytes);
 

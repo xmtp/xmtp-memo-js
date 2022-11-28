@@ -1,7 +1,7 @@
 import LitJsSdk from "@lit-protocol/sdk-browser";
 import { Blob } from "buffer";
 import { render } from "mustache";
-import { AuthSig } from "./crypto/AuthSig";
+import { AuthSig, requiredSiweResource } from "./crypto/AuthSig";
 import { EncryptedMemoV1 } from "./EncryptedMemo";
 import { MemoV1 } from "./Memo";
 import { bytesToHex } from "./utils";
@@ -44,7 +44,7 @@ export default class Lit {
   }
 
   async encryptMemo(memo: MemoV1): Promise<EncryptedMemoV1> {
-    const accTemplate = Lit.accTemplate_userAddr();
+    const accTemplate = Lit.accTemplate_siweAddr();
     const acc = this.renderAccTemplate(accTemplate, {
       userAddress: memo.payload.toAddr,
     });
@@ -57,20 +57,26 @@ export default class Lit {
     return new EncryptedMemoV1(contents, key, accTemplate);
   }
 
-  async decryptMemo(encryptedMemo: EncryptedMemoV1): Promise<MemoV1> {
-    await this.ensureConnected();
-    const authSig = await this.getAuthSig();
-    const acc = this.renderAccTemplate(encryptedMemo.accTemplate, {
-      userAddress: authSig.address,
-    });
+  async decryptMemo(
+    encryptedMemo: EncryptedMemoV1
+  ): Promise<MemoV1 | undefined> {
+    try {
+      await this.ensureConnected();
+      const authSig = await this.getAuthSig();
+      const acc = this.renderAccTemplate(encryptedMemo.accTemplate, {
+        userAddress: authSig.address,
+      });
 
-    return await MemoV1.fromBytes(
-      await this.decryptBytes(
-        encryptedMemo.encryptedSymmetricKey,
-        encryptedMemo.encryptedString,
-        acc
-      )
-    );
+      return await MemoV1.fromBytes(
+        await this.decryptBytes(
+          encryptedMemo.encryptedSymmetricKey,
+          encryptedMemo.encryptedString,
+          acc
+        )
+      );
+    } catch (e) {
+      console.warn("During Decryption", e);
+    }
   }
 
   // Bytes are encrypted with a symmetric key. The encryption key is then stored in the Lit network
@@ -132,6 +138,36 @@ export default class Lit {
   // AccessControlConditions are included in the EncryptedMemo as it is required to
   // retrieve the encryption key, and may change in the future. As this data must
   // be included in cleartext, a template is included so that the ACC contains no PII.
+  static accTemplate_siweAddr(): AccTemplate {
+    const acc = [
+      {
+        contractAddress: "",
+        standardContractType: "SIWE",
+        chain: Lit.chain,
+        method: "",
+        parameters: [":resources"],
+        returnValueTest: {
+          comparator: "contains",
+          value: requiredSiweResource(),
+        },
+      },
+      { operator: "and" },
+      {
+        contractAddress: "",
+        standardContractType: "",
+        chain: Lit.chain,
+        method: "",
+        parameters: [":userAddress"],
+        returnValueTest: {
+          comparator: "=",
+          value: "{{userAddress}}",
+        },
+      },
+    ];
+
+    return JSON.stringify(acc);
+  }
+
   static accTemplate_userAddr(): AccTemplate {
     const acc = [
       {

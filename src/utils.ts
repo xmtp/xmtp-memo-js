@@ -1,4 +1,5 @@
 import { Signature } from "@xmtp/xmtp-js";
+import { MemoV1 } from "./Memo";
 
 export function bytesToHex(bytes: Uint8Array | undefined): string {
   if (!bytes) {
@@ -56,10 +57,24 @@ export async function* mapPaginatedStream<In, Out>(
   }
 }
 
+export async function* filterStream(
+  gen: AsyncGenerator<MemoV1 | undefined>
+): AsyncGenerator<MemoV1, any, unknown> {
+  for await (const item of gen) {
+    if (!item) {
+      continue;
+    }
+    yield item;
+  }
+}
+
 // Takes an async generator of pages/arrays and returns a flattened collection.
 export async function* flattenStream<In>(gen: AsyncGenerator<In[]>) {
   for await (const page of gen) {
     for (const item of page) {
+      if (!item) {
+        continue;
+      }
       yield item;
     }
   }

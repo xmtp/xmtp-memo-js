@@ -1,14 +1,20 @@
 import { Client } from "@xmtp/xmtp-js";
 
-import { AuthSig } from "./crypto/AuthSig";
-import { EncryptedMemoV1 } from "./EncryptedMemo";
+import { AuthSig, requiredSiweResource } from "./crypto/AuthSig";
 import Lit from "./Lit";
 import { MemoV1 } from "./Memo";
 import { MemoSigner } from "./crypto/MemoSigner";
 import { MemoStorage } from "./storage/MemoStorage";
-import { flattenStream, gatherStream, mapPaginatedStream } from "./utils";
+import {
+  filterStream,
+  flattenStream,
+  gatherStream,
+  mapPaginatedStream,
+} from "./utils";
 
 type Content = string;
+
+class BadAuthSig extends Error {}
 
 export default class MemoClient {
   litClient;
@@ -23,6 +29,12 @@ export default class MemoClient {
     memoSigner: MemoSigner,
     storage: MemoStorage
   ) {
+    // TODO: add better resource validation
+    if (!authSig.signedMessage.includes(requiredSiweResource())) {
+      throw new BadAuthSig(
+        `required resource:${requiredSiweResource()} is missing`
+      );
+    }
     this.litClient = new Lit(authSig);
     this.xmtpClient = xmtpClient;
     this.memoSigner = memoSigner;
@@ -39,7 +51,7 @@ export default class MemoClient {
       encryptedMemoStream,
       this.litClient.decryptMemo.bind(this.litClient)
     );
-    return flattenStream(memoPages);
+    return filterStream(flattenStream(memoPages));
   }
 
   async listAllMemos(): Promise<MemoV1[]> {

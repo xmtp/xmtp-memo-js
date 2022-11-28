@@ -1,5 +1,3 @@
-import { utils } from "ethers";
-
 export type AuthSig = {
   sig: string;
   derivedVia: string;
@@ -7,11 +5,8 @@ export type AuthSig = {
   address: string;
 };
 
-export function isAuthSigValid(authSig: AuthSig): boolean {
-  const addr = utils.verifyMessage(authSig.signedMessage, authSig.sig);
-  if (addr === authSig.address) {
-    return true;
-  }
-
-  return false;
+// Authentication with Lit requires that the AuthSignature contains the resource for the
+// memo service.
+export function requiredSiweResource() {
+  return "xmtp-memos://xmtp.org";
 }
