@@ -46,7 +46,7 @@ describe("MemoClient", function () {
       "incorrect number of memos detected"
     );
     const retrievedContents = memos.map((memo) => {
-      return memo.payload.encodedContent;
+      return memo.content;
     });
 
     console.log("R", retrievedContents);

@@ -2,8 +2,7 @@ import assert from "assert";
 
 import { PrivateKey } from "@xmtp/xmtp-js";
 import { utils, Wallet } from "ethers";
-import { bytesToHex, hexToBytes } from "../src/utils";
-import { AuthSigner } from "./helpers";
+import { hexToBytes } from "../src/utils";
 
 describe("AuthSigner", function () {
   it("Signing", async function () {
