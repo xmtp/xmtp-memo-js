@@ -1,8 +1,8 @@
-import { Client } from "@xmtp/xmtp-js";
+import { Client, ContentTypeText, SendOptions } from "@xmtp/xmtp-js";
 
 import { AuthSig, requiredSiweResource } from "./crypto/AuthSig";
 import Lit from "./Lit";
-import { MemoV1 } from "./Memo";
+import { DecodedMemoV1, MemoV1 } from "./Memo";
 import { ClientSigner, MemoSigner } from "./crypto/MemoSigner";
 import { MemoStorage } from "./storage/MemoStorage";
 import {
@@ -12,8 +12,7 @@ import {
   mapPaginatedStream,
 } from "./utils";
 import { XmtpStorage } from "./storage/XmtpStorage";
-
-type Content = string;
+import { EncryptedMemoV1 } from "./EncryptedMemo";
 
 class BadAuthSig extends Error {}
 
@@ -55,19 +54,19 @@ export default class MemoClient {
     );
   }
 
-  async listMemos(): Promise<AsyncGenerator<MemoV1>> {
+  async listMemos(): Promise<AsyncGenerator<DecodedMemoV1>> {
     const encryptedMemoStream = await this.storage.fetchEncryptedMemos(
       this.addr
     );
 
     const memoPages = mapPaginatedStream(
       encryptedMemoStream,
-      this.litClient.decryptMemo.bind(this.litClient)
+      this.decodeMemo.bind(this)
     );
     return filterStream(flattenStream(memoPages));
   }
 
-  async listAllMemos(): Promise<MemoV1[]> {
+  async listAllMemos(): Promise<DecodedMemoV1[]> {
     return await gatherStream(await this.listMemos());
   }
 
@@ -75,15 +74,35 @@ export default class MemoClient {
     return [];
   }
 
-  async sendMemo(toAddr: string, content: Content): Promise<boolean> {
+  async sendMemo(
+    toAddr: string,
+    content: any,
+    options?: SendOptions
+  ): Promise<boolean> {
+    const contentType = options?.contentType || ContentTypeText;
+    const timestamp = options?.timestamp || new Date();
+    const payload = await this.xmtpClient.encodeContent(content, options);
+
     const memo = await MemoV1.create(
       toAddr,
       this.addr,
-      content,
+      payload,
       this.memoSigner
     );
 
     const encryptedMemo = await this.litClient.encryptMemo(memo);
     return this.storage.postEncryptedMemo(toAddr, encryptedMemo);
+  }
+
+  // Decrypt and return a DecodedMemo
+  private async decodeMemo(
+    encodedMemo: EncryptedMemoV1
+  ): Promise<DecodedMemoV1 | undefined> {
+    const decryptedBytes = await this.litClient.decryptMemo(encodedMemo);
+    if (!decryptedBytes) {
+      return decryptedBytes;
+    }
+
+    return DecodedMemoV1.fromBytes(decryptedBytes, this.xmtpClient);
   }
 }

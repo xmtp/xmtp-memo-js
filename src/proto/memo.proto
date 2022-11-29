@@ -5,7 +5,7 @@ package xmtp.memo;
 message PayloadV1 {
   string fromAddr = 1;
   string toAddr = 2;
-  string encodedContent = 3;
+  bytes encodedContent = 3;
   uint64 timestamp = 4;
 }
 

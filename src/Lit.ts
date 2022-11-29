@@ -59,7 +59,7 @@ export default class Lit {
 
   async decryptMemo(
     encryptedMemo: EncryptedMemoV1
-  ): Promise<MemoV1 | undefined> {
+  ): Promise<Uint8Array | undefined> {
     try {
       await this.ensureConnected();
       const authSig = await this.getAuthSig();
@@ -67,12 +67,10 @@ export default class Lit {
         userAddress: authSig.address,
       });
 
-      return await MemoV1.fromBytes(
-        await this.decryptBytes(
-          encryptedMemo.encryptedSymmetricKey,
-          encryptedMemo.encryptedString,
-          acc
-        )
+      return await this.decryptBytes(
+        encryptedMemo.encryptedSymmetricKey,
+        encryptedMemo.encryptedString,
+        acc
       );
     } catch (e) {
       console.warn("During Decryption", e);

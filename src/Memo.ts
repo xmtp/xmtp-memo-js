@@ -1,15 +1,23 @@
 import { MemoSigner } from "./crypto/MemoSigner";
 import * as proto from "./proto/memo";
 import { MemoSignature } from "./crypto/MemoSignature";
+import { Client, ContentTypeId, ContentTypeText } from "@xmtp/xmtp-js";
+import { decodeContent } from "@xmtp/xmtp-js";
 
 class AddressMismatchError extends Error {}
 class NoSignerError extends Error {}
 class SignatureMismatchError extends Error {}
 
+export type ContentData = {
+  content: any;
+  contentType: ContentTypeId;
+  error: Error | undefined;
+};
+
 export class PayloadV1 implements proto.PayloadV1 {
   fromAddr: string;
   toAddr: string;
-  encodedContent: string;
+  encodedContent: Uint8Array;
   timestamp: number;
 
   constructor({
@@ -45,13 +53,13 @@ export class MemoV1 {
   static async create(
     toAddr: string,
     fromAddr: string,
-    content: string,
+    encodedContent: Uint8Array,
     signer: MemoSigner
   ): Promise<MemoV1> {
     const payload = new PayloadV1({
       fromAddr,
       toAddr,
-      encodedContent: content,
+      encodedContent: encodedContent,
       timestamp: new Date().getTime(),
     });
 
@@ -73,8 +81,31 @@ export class MemoV1 {
       signature: encodedSignature,
     }).finish();
   }
+}
 
-  static async fromBytes(bytes: Uint8Array): Promise<MemoV1> {
+export class DecodedMemoV1 {
+  fromAddr: string;
+  toAddr: string;
+  timestamp: number;
+
+  content: any;
+  contentType: ContentTypeId;
+  error: Error | undefined;
+
+  constructor(payload: PayloadV1, content: ContentData) {
+    this.fromAddr = payload.fromAddr;
+    this.toAddr = payload.toAddr;
+    this.timestamp = payload.timestamp;
+
+    this.content = content.content;
+    this.contentType = content.contentType;
+    this.error = content.error;
+  }
+
+  static async fromBytes(
+    bytes: Uint8Array,
+    xmtpClient: Client
+  ): Promise<DecodedMemoV1> {
     const obj = proto.MemoV1.decode(bytes);
     const payload = PayloadV1.fromBytes(obj.encodedPayload);
     const memoSignature = MemoSignature.fromBytes(obj.signature);
@@ -92,6 +123,7 @@ export class MemoV1 {
       );
     }
 
-    return new MemoV1(payload);
+    const content = decodeContent(payload.encodedContent, xmtpClient);
+    return new DecodedMemoV1(payload, content);
   }
 }

@@ -1,5 +1,5 @@
 import { Signature } from "@xmtp/xmtp-js";
-import { MemoV1 } from "./Memo";
+import { DecodedMemoV1, MemoV1 } from "./Memo";
 
 export function bytesToHex(bytes: Uint8Array | undefined): string {
   if (!bytes) {
@@ -58,8 +58,8 @@ export async function* mapPaginatedStream<In, Out>(
 }
 
 export async function* filterStream(
-  gen: AsyncGenerator<MemoV1 | undefined>
-): AsyncGenerator<MemoV1, any, unknown> {
+  gen: AsyncGenerator<DecodedMemoV1 | undefined>
+): AsyncGenerator<DecodedMemoV1, any, unknown> {
   for await (const item of gen) {
     if (!item) {
       continue;
