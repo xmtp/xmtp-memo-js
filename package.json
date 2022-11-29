@@ -44,13 +44,13 @@
   ],
   "author": "XMTP Labs <eng@xmtp.com>",
   "license": "MIT",
-  "homepage": "https://github.com/xmtp/xmtp-js",
+  "homepage": "https://github.com/xmtp/xmtp-memo-js",
   "repository": {
     "type": "git",
-    "url": "https:git@github.com:xmtp/xmtp-js.git"
+    "url": "https:git@github.com:xmtp/xmtp-memo-js.git"
   },
   "bugs": {
-    "url": "https://github.com/xmtp/xmtp-js/issues"
+    "url": "https://github.com/xmtp/xmtp-memo-js/issues"
   },
   "release": {
     "branches": [
