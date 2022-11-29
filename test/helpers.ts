@@ -1,5 +1,5 @@
 import { Wallet } from "ethers";
-import { Client, PrivateKey } from "@xmtp/xmtp-js";
+import { ApiUrls, Client, PrivateKey } from "@xmtp/xmtp-js";
 import { SiweMessage } from "lit-siwe";
 
 import {
@@ -16,8 +16,15 @@ export function newWallet(): Wallet {
   return new Wallet(key.secp256k1.bytes);
 }
 
-export function createTestClient(): Promise<Client> {
-  return Client.create(newWallet(), { env: "dev" });
+export function xenv(e: string | undefined): keyof typeof ApiUrls | undefined {
+  if (!e) {
+    return undefined;
+  }
+  if (e in ApiUrls) {
+    return e as unknown as keyof typeof ApiUrls;
+  }
+
+  throw new Error("Invalid Network Type");
 }
 
 export async function createTestAuthSig(wallet: Wallet): Promise<AuthSig> {
@@ -39,7 +46,7 @@ export async function createTestMemoClient(
 ): Promise<MemoClient> {
   const wallet = overrideWallet ?? newWallet();
 
-  const c = await Client.create(wallet, { env: "local" });
+  const c = await ClientFactory.newClient({ wallet });
   const storage = await XmtpStorage.create(c);
 
   const client = new MemoClient(
@@ -75,5 +82,21 @@ export async function signWithRandomKey(bytes: Uint8Array): Promise<AuthSig> {
 export class AuthSigner {
   static async create(): Promise<AuthSigner> {
     return new AuthSigner();
+  }
+}
+
+// Factory Object for creating XmtpClients
+// Set the envvar: XMTP_DEFAULT_TEST_NETWORK to override defaults for testing
+export class ClientFactory {
+  static async newClient(opts?: {
+    wallet?: Wallet;
+    env?: keyof typeof ApiUrls;
+  }): Promise<Client> {
+    const w = opts?.wallet ?? newWallet();
+    const e = opts?.env ?? process.env.XMTP_DEFAULT_TEST_NETWORK ?? "local";
+
+    const network = xenv(e);
+
+    return Client.create(w, { env: network });
   }
 }

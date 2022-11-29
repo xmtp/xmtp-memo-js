@@ -14,6 +14,7 @@ export type ContentData = {
   error: Error | undefined;
 };
 
+// A Payload represents the portion of a memo which is protected by digital signature
 export class PayloadV1 implements proto.PayloadV1 {
   fromAddr: string;
   toAddr: string;

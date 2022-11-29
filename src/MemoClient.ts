@@ -74,13 +74,18 @@ export default class MemoClient {
     return [];
   }
 
+  // Posts a memo to the XMTP network.
   async sendMemo(
     toAddr: string,
     content: any,
     options?: SendOptions
   ): Promise<boolean> {
-    const contentType = options?.contentType || ContentTypeText;
-    const timestamp = options?.timestamp || new Date();
+    if (options?.timestamp) {
+      console.warn(
+        `Arbitrarily setting the timestamp on Memo is not supported. The Memo will use the current timestamp: ${new Date().getTime()}`
+      );
+    }
+
     const payload = await this.xmtpClient.encodeContent(content, options);
 
     const memo = await MemoV1.create(
