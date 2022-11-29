@@ -1,6 +1,9 @@
 import assert from "assert";
+import { SiweMessage } from "lit-siwe";
 import { MemoClient, MemoV1 } from "../src";
-import { createTestMemoClient, newWallet } from "./helpers";
+import { genAuthSig, requiredSiweResource } from "../src/crypto/AuthSig";
+import { BadAuthSig } from "../src/MemoClient";
+import { ClientFactory, createTestMemoClient, newWallet } from "./helpers";
 
 async function createRawMemo(
   mc: MemoClient,
@@ -76,5 +79,42 @@ describe("MemoClient", function () {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     m = await mc.listAllMemos();
     assert.equal(m.length, 1);
+  });
+
+  it("AuthSig", async function () {
+    const wallet = newWallet();
+    const client = await ClientFactory.newClient({ wallet });
+
+    // AuthSig: OK
+
+    const siweMessage_ok = new SiweMessage({
+      domain: "acme.com",
+      address: client.address,
+      statement: "This is a signature used for testing",
+      uri: "https://app.acme.com",
+      version: "1",
+      chainId: 1,
+      resources: [requiredSiweResource()],
+    });
+
+    const okSig = await genAuthSig(wallet, siweMessage_ok.prepareMessage());
+    await expect(MemoClient.create(okSig, client)).resolves.toBeDefined();
+
+    // AuthSig: Missing Resource
+
+    const badAuthSig = await genAuthSig(
+      wallet,
+      new SiweMessage({
+        domain: "acme.com",
+        address: client.address,
+        statement: "This is a signature used for testing",
+        uri: "https://app.acme.com",
+        version: "1",
+        chainId: 1,
+      }).prepareMessage()
+    );
+    await expect(MemoClient.create(badAuthSig, client)).rejects.toThrow(
+      BadAuthSig
+    );
   });
 });

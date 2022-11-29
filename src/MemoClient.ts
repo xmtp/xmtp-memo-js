@@ -14,7 +14,7 @@ import {
 import { XmtpStorage } from "./storage/XmtpStorage";
 import { EncryptedMemoV1 } from "./EncryptedMemo";
 
-class BadAuthSig extends Error {}
+export class BadAuthSig extends Error {}
 
 export default class MemoClient {
   litClient;
@@ -29,8 +29,9 @@ export default class MemoClient {
     memoSigner: MemoSigner,
     storage: MemoStorage
   ) {
-    // TODO: add better resource validation
-    if (!authSig.signedMessage.includes(requiredSiweResource())) {
+    // Search for the required resource in the Siwe Message.
+    const validator = new RegExp(`\n\\s*-\\s*${requiredSiweResource()}$`, "gm");
+    if (!validator.test(authSig.signedMessage)) {
       throw new BadAuthSig(
         `required resource:${requiredSiweResource()} is missing`
       );

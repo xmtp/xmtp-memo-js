@@ -88,3 +88,7 @@ export async function gatherStream<In>(gen: AsyncIterable<In>): Promise<In[]> {
   }
   return out;
 }
+
+export function escapePattern(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
