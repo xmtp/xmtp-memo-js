@@ -17,9 +17,9 @@ export class ClientSigner implements MemoSigner {
   }
 
   static async create(client: Client) {
-    const bundle = await client.getUserContact(client.address);
+    const bundle = client.keys.getPublicKeyBundle();
     if (!bundle) {
-      throw new Error("no contract for signer");
+      throw new Error("no contact for signer");
     }
 
     return new ClientSigner(client, new SignerKey(bundle.identityKey));
