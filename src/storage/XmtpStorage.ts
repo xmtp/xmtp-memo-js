@@ -1,9 +1,9 @@
-import { Client, ClientOptions } from "@xmtp/xmtp-js";
+import { Client } from "@xmtp/xmtp-js";
 import { MemoStorage } from "./MemoStorage";
-import { newWallet } from "../../test/helpers";
 import { fetcher, messageApi } from "@xmtp/proto";
 import { EncryptedMemoV1 } from "../EncryptedMemo";
 import { mapPaginatedStream } from "../utils";
+import { keccak256 } from "js-sha3";
 
 export class XmtpStorage implements MemoStorage {
   client: Client;
@@ -55,6 +55,8 @@ export class XmtpStorage implements MemoStorage {
   }
 
   buildTopic(addr: string): string {
-    return `/xmtp-memo/0/${addr}`;
+    // Obscure the storage topic, to maintain recipient privacy.
+    const obscuredTopic = keccak256(`xmtp:memo:${addr}`);
+    return `/xmtp-memo/0/memo-${obscuredTopic}`;
   }
 }
