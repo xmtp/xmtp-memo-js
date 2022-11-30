@@ -25,29 +25,32 @@ Memo's are similar to XMTP Messages however they differ substantively.
 A `MemoClient` can be constructed from a AuthSig and a valid XmtpClient
 
 ```ts
-import { Client } from '@xmtp/xmtp-js'
-import { Wallet } from 'ethers'
+import { Client } from "@xmtp/xmtp-js";
+import { Wallet } from "ethers";
+import { SiweMessage } from "lit-siwe";
 
+import { MemoClient } from "../src";
+import { genAuthSig, requiredSiweResource } from "../src/crypto/AuthSig";
 
 // You'll want to replace this with a wallet from your application
-const wallet = Wallet.createRandom()
+const wallet = Wallet.createRandom();
 // Create the client with your wallet. This will connect to the XMTP development network by default
-const client = await Client.create(wallet)
+const client = await Client.create(wallet);
 
 // Build a SignInWithEthereum signature. You can re-use your existing sign in signature by adding the required resource
 const siweMessage = new SiweMessage({
-    domain: "acme.com",
-    address: wallet.address,
-    statement: "This is a signature used for testing",
-    uri: "https://app.acme.com",
-    version: "1",
-    chainId: 1,
-    resources: [requiredSiweResource()],
+  domain: "acme.com",
+  address: wallet.address,
+  statement: "This is a signature used for testing",
+  uri: "https://app.acme.com",
+  version: "1",
+  chainId: 1,
+  resources: [requiredSiweResource()],
 });
-const authSig = await genAuthSig(wallet, siweMessage.prepareMessage())
+const authSig = await genAuthSig(wallet, siweMessage.prepareMessage());
 
 // Create the memo client based on the XMTP client.
-const memoClient = await MemoClient.create(authSig, client)
+const memoClient = await MemoClient.create(authSig, client);
 
 ```
 

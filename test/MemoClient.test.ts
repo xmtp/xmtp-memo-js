@@ -52,7 +52,6 @@ describe("MemoClient", function () {
       return memo.content;
     });
 
-    console.log("R", retrievedContents);
     assert.deepEqual(retrievedContents, outboundContents);
   });
 

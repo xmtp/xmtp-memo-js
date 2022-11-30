@@ -36,6 +36,13 @@ export default class MemoClient {
         `required resource:${requiredSiweResource()} is missing`
       );
     }
+
+    if (authSig.address != xmtpClient.address) {
+      throw new BadAuthSig(
+        `AuthSig:address(${authSig.address}) does not match xmtpClient:address(${xmtpClient.address})`
+      );
+    }
+
     this.litClient = new Lit(authSig);
     this.xmtpClient = xmtpClient;
     this.memoSigner = memoSigner;
