@@ -1,17 +1,45 @@
-import assert from "assert";
-import { EncryptedMemoV1 } from "../src/EncryptedMemo";
-import { bytesToHex } from "../src/utils";
+import {
+  EncryptedMemoV1,
+  decodeEncryptedMemo,
+  EncryptedMemoV2,
+} from "../src/EncryptedMemo";
 import Lit from "../src/Lit";
 
 describe("Encrypted Memo", function () {
   it("round trip", async function () {
-    const s = new TextEncoder().encode("message");
-    const k = new TextEncoder().encode("keys");
+    const encryptedString = new TextEncoder().encode("message");
+    const encryptedSymmetricKey = new TextEncoder().encode("keys");
+    const acc = Lit.accTemplate_siweAddr();
 
-    const em = new EncryptedMemoV1(s, k, Lit.accTemplate_siweAddr());
-    const bytes = await em.toBytes();
-    const em1 = await EncryptedMemoV1.fromBytes(bytes);
+    const bytes = await EncryptedMemoV1.create(
+      encryptedString,
+      encryptedSymmetricKey,
+      acc
+    ).toBytes();
 
-    assert.deepEqual(em1, em);
+    const em = decodeEncryptedMemo(bytes);
+
+    expect(em.encryptedString).toEqual(encryptedString);
+    expect(em.encryptedSymmetricKey).toEqual(encryptedSymmetricKey);
+    expect(em.getAccTemplate()).toEqual(acc);
+  });
+
+  it("versioning2", async function () {
+    const encryptedString = new TextEncoder().encode("message");
+    const encryptedSymmetricKey = new TextEncoder().encode("keys");
+    const acc = Lit.accTemplate_siweAddr();
+
+    const bytes = await EncryptedMemoV2.create(
+      "v2",
+      encryptedString,
+      encryptedSymmetricKey,
+      acc
+    ).toBytes();
+
+    const em = decodeEncryptedMemo(bytes);
+
+    expect(em.encryptedString).toEqual(encryptedString);
+    expect(em.encryptedSymmetricKey).toEqual(encryptedSymmetricKey);
+    expect(em.getAccTemplate()).toEqual(acc);
   });
 });

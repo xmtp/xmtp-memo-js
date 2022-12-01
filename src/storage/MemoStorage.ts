@@ -1,12 +1,12 @@
-import { EncryptedMemoV1 } from "../EncryptedMemo";
+import { EncryptedMemo } from "../EncryptedMemo";
 
 export abstract class MemoStorage {
   abstract fetchEncryptedMemos(
     addr: string
-  ): Promise<AsyncGenerator<EncryptedMemoV1[], any>>;
+  ): Promise<AsyncGenerator<EncryptedMemo[], any>>;
 
   abstract postEncryptedMemo(
     addr: string,
-    encryptedPackage: EncryptedMemoV1
+    encryptedPackage: EncryptedMemo
   ): Promise<boolean>;
 }

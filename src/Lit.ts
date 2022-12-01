@@ -2,7 +2,7 @@ import LitJsSdk from "@lit-protocol/sdk-browser";
 import { Blob } from "buffer";
 import { render } from "mustache";
 import { AuthSig, requiredSiweResource } from "./crypto/AuthSig";
-import { EncryptedMemoV1 } from "./EncryptedMemo";
+import { EncryptedMemo, EncryptedMemoV1 } from "./EncryptedMemo";
 import { MemoV1 } from "./Memo";
 import { bytesToHex } from "./utils";
 
@@ -43,7 +43,7 @@ export default class Lit {
     await this.client.connect();
   }
 
-  async encryptMemo(memo: MemoV1): Promise<EncryptedMemoV1> {
+  async encryptMemo(memo: MemoV1): Promise<EncryptedMemo> {
     const accTemplate = Lit.accTemplate_siweAddr();
     const acc = this.renderAccTemplate(accTemplate, {
       userAddress: memo.payload.toAddr,
@@ -54,16 +54,16 @@ export default class Lit {
       acc
     );
 
-    return new EncryptedMemoV1(contents, key, accTemplate);
+    return EncryptedMemoV1.create(contents, key, accTemplate);
   }
 
   async decryptMemo(
-    encryptedMemo: EncryptedMemoV1
+    encryptedMemo: EncryptedMemo
   ): Promise<Uint8Array | undefined> {
     try {
       await this.ensureConnected();
       const authSig = await this.getAuthSig();
-      const acc = this.renderAccTemplate(encryptedMemo.accTemplate, {
+      const acc = this.renderAccTemplate(encryptedMemo.getAccTemplate(), {
         userAddress: authSig.address,
       });
 

@@ -1,7 +1,7 @@
 import { Client } from "@xmtp/xmtp-js";
 import { MemoStorage } from "./MemoStorage";
 import { fetcher, messageApi } from "@xmtp/proto";
-import { EncryptedMemoV1 } from "../EncryptedMemo";
+import { decodeEncryptedMemo, EncryptedMemo } from "../EncryptedMemo";
 import { mapPaginatedStream } from "../utils";
 import { keccak256 } from "js-sha3";
 
@@ -18,7 +18,7 @@ export class XmtpStorage implements MemoStorage {
 
   async postEncryptedMemo(
     addr: string,
-    encryptedMemo: EncryptedMemoV1
+    encryptedMemo: EncryptedMemo
   ): Promise<boolean> {
     const topic = this.buildTopic(addr);
     const bytes = await encryptedMemo.toBytes();
@@ -34,7 +34,7 @@ export class XmtpStorage implements MemoStorage {
 
   async fetchEncryptedMemos(
     addr: string
-  ): Promise<AsyncGenerator<EncryptedMemoV1[], any>> {
+  ): Promise<AsyncGenerator<EncryptedMemo[], any>> {
     const memoStream = mapPaginatedStream(
       this.client.apiClient.queryIteratePages(
         { contentTopics: [this.buildTopic(addr)] },
@@ -43,15 +43,21 @@ export class XmtpStorage implements MemoStorage {
           pageSize: 100,
         }
       ),
-      this.decode
+      this.asyncWrap(this.decode)
     );
 
     return memoStream;
   }
 
-  async decode({ message }: messageApi.Envelope): Promise<EncryptedMemoV1> {
+  private asyncWrap<K, T>(func: (k: K) => T): (k: K) => Promise<T> {
+    return (k: K): Promise<T> => {
+      return Promise.resolve(func(k));
+    };
+  }
+
+  decode({ message }: messageApi.Envelope): EncryptedMemo {
     const bytes = fetcher.b64Decode(message as unknown as string);
-    return await EncryptedMemoV1.fromBytes(bytes);
+    return decodeEncryptedMemo(bytes);
   }
 
   buildTopic(addr: string): string {

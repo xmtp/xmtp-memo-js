@@ -9,10 +9,17 @@ message PayloadV1 {
   uint64 timestamp = 4;
 }
 
+message Payload {
+  oneof version {
+    PayloadV1 v1 = 1;
+  }
+}
+
 message MemoV1 {
   bytes encodedPayload =1;
   bytes signature = 2;
 }
+
 
 message MemoSignature {
   bytes signature = 1;
@@ -23,5 +30,19 @@ message MemoSignature {
 message EncryptedMemoV1 {
   bytes encryptedString = 1;
   bytes encryptedSymmetricKey = 2;
-  bytes accessControlConditions= 3;
+  bytes accTemplate = 3;
+}
+
+message EncryptedMemoV2 {
+  string v = 1;
+  bytes encryptedString = 2;
+  bytes encryptedSymmetricKey = 3;
+  bytes accTemplate = 4;
+}
+
+message EncryptedMemo {
+  oneof version {
+    EncryptedMemoV1 v1 = 1;
+    EncryptedMemoV2 v2 = 2;
+  }
 }

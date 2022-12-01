@@ -12,7 +12,7 @@ import {
   mapPaginatedStream,
 } from "./utils";
 import { XmtpStorage } from "./storage/XmtpStorage";
-import { EncryptedMemoV1 } from "./EncryptedMemo";
+import { EncryptedMemo, EncryptedMemoV1 } from "./EncryptedMemo";
 
 export class BadAuthSig extends Error {}
 
@@ -109,7 +109,7 @@ export default class MemoClient {
 
   // Decrypt and return a DecodedMemo
   private async decodeMemo(
-    encodedMemo: EncryptedMemoV1
+    encodedMemo: EncryptedMemo
   ): Promise<DecodedMemoV1 | undefined> {
     const decryptedBytes = await this.litClient.decryptMemo(encodedMemo);
     if (!decryptedBytes) {
