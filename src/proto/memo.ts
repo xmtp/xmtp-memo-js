@@ -32,16 +32,8 @@ export interface EncryptedMemoV1 {
   accTemplate: Uint8Array;
 }
 
-export interface EncryptedMemoV2 {
-  v: string;
-  encryptedString: Uint8Array;
-  encryptedSymmetricKey: Uint8Array;
-  accTemplate: Uint8Array;
-}
-
 export interface EncryptedMemo {
   v1?: EncryptedMemoV1 | undefined;
-  v2?: EncryptedMemoV2 | undefined;
 }
 
 function createBasePayloadV1(): PayloadV1 {
@@ -377,107 +369,14 @@ export const EncryptedMemoV1 = {
   },
 };
 
-function createBaseEncryptedMemoV2(): EncryptedMemoV2 {
-  return {
-    v: "",
-    encryptedString: new Uint8Array(),
-    encryptedSymmetricKey: new Uint8Array(),
-    accTemplate: new Uint8Array(),
-  };
-}
-
-export const EncryptedMemoV2 = {
-  encode(message: EncryptedMemoV2, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.v !== "") {
-      writer.uint32(10).string(message.v);
-    }
-    if (message.encryptedString.length !== 0) {
-      writer.uint32(18).bytes(message.encryptedString);
-    }
-    if (message.encryptedSymmetricKey.length !== 0) {
-      writer.uint32(26).bytes(message.encryptedSymmetricKey);
-    }
-    if (message.accTemplate.length !== 0) {
-      writer.uint32(34).bytes(message.accTemplate);
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): EncryptedMemoV2 {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseEncryptedMemoV2();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          message.v = reader.string();
-          break;
-        case 2:
-          message.encryptedString = reader.bytes();
-          break;
-        case 3:
-          message.encryptedSymmetricKey = reader.bytes();
-          break;
-        case 4:
-          message.accTemplate = reader.bytes();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(object: any): EncryptedMemoV2 {
-    return {
-      v: isSet(object.v) ? String(object.v) : "",
-      encryptedString: isSet(object.encryptedString) ? bytesFromBase64(object.encryptedString) : new Uint8Array(),
-      encryptedSymmetricKey: isSet(object.encryptedSymmetricKey)
-        ? bytesFromBase64(object.encryptedSymmetricKey)
-        : new Uint8Array(),
-      accTemplate: isSet(object.accTemplate) ? bytesFromBase64(object.accTemplate) : new Uint8Array(),
-    };
-  },
-
-  toJSON(message: EncryptedMemoV2): unknown {
-    const obj: any = {};
-    message.v !== undefined && (obj.v = message.v);
-    message.encryptedString !== undefined &&
-      (obj.encryptedString = base64FromBytes(
-        message.encryptedString !== undefined ? message.encryptedString : new Uint8Array(),
-      ));
-    message.encryptedSymmetricKey !== undefined &&
-      (obj.encryptedSymmetricKey = base64FromBytes(
-        message.encryptedSymmetricKey !== undefined ? message.encryptedSymmetricKey : new Uint8Array(),
-      ));
-    message.accTemplate !== undefined &&
-      (obj.accTemplate = base64FromBytes(message.accTemplate !== undefined ? message.accTemplate : new Uint8Array()));
-    return obj;
-  },
-
-  fromPartial<I extends Exact<DeepPartial<EncryptedMemoV2>, I>>(object: I): EncryptedMemoV2 {
-    const message = createBaseEncryptedMemoV2();
-    message.v = object.v ?? "";
-    message.encryptedString = object.encryptedString ?? new Uint8Array();
-    message.encryptedSymmetricKey = object.encryptedSymmetricKey ?? new Uint8Array();
-    message.accTemplate = object.accTemplate ?? new Uint8Array();
-    return message;
-  },
-};
-
 function createBaseEncryptedMemo(): EncryptedMemo {
-  return { v1: undefined, v2: undefined };
+  return { v1: undefined };
 }
 
 export const EncryptedMemo = {
   encode(message: EncryptedMemo, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.v1 !== undefined) {
       EncryptedMemoV1.encode(message.v1, writer.uint32(10).fork()).ldelim();
-    }
-    if (message.v2 !== undefined) {
-      EncryptedMemoV2.encode(message.v2, writer.uint32(18).fork()).ldelim();
     }
     return writer;
   },
@@ -492,9 +391,6 @@ export const EncryptedMemo = {
         case 1:
           message.v1 = EncryptedMemoV1.decode(reader, reader.uint32());
           break;
-        case 2:
-          message.v2 = EncryptedMemoV2.decode(reader, reader.uint32());
-          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -504,23 +400,18 @@ export const EncryptedMemo = {
   },
 
   fromJSON(object: any): EncryptedMemo {
-    return {
-      v1: isSet(object.v1) ? EncryptedMemoV1.fromJSON(object.v1) : undefined,
-      v2: isSet(object.v2) ? EncryptedMemoV2.fromJSON(object.v2) : undefined,
-    };
+    return { v1: isSet(object.v1) ? EncryptedMemoV1.fromJSON(object.v1) : undefined };
   },
 
   toJSON(message: EncryptedMemo): unknown {
     const obj: any = {};
     message.v1 !== undefined && (obj.v1 = message.v1 ? EncryptedMemoV1.toJSON(message.v1) : undefined);
-    message.v2 !== undefined && (obj.v2 = message.v2 ? EncryptedMemoV2.toJSON(message.v2) : undefined);
     return obj;
   },
 
   fromPartial<I extends Exact<DeepPartial<EncryptedMemo>, I>>(object: I): EncryptedMemo {
     const message = createBaseEncryptedMemo();
     message.v1 = (object.v1 !== undefined && object.v1 !== null) ? EncryptedMemoV1.fromPartial(object.v1) : undefined;
-    message.v2 = (object.v2 !== undefined && object.v2 !== null) ? EncryptedMemoV2.fromPartial(object.v2) : undefined;
     return message;
   },
 };

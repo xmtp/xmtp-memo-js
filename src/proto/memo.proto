@@ -33,16 +33,8 @@ message EncryptedMemoV1 {
   bytes accTemplate = 3;
 }
 
-message EncryptedMemoV2 {
-  string v = 1;
-  bytes encryptedString = 2;
-  bytes encryptedSymmetricKey = 3;
-  bytes accTemplate = 4;
-}
-
 message EncryptedMemo {
   oneof version {
     EncryptedMemoV1 v1 = 1;
-    EncryptedMemoV2 v2 = 2;
   }
 }
