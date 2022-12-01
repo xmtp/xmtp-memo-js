@@ -3,7 +3,7 @@ import { Blob } from "buffer";
 import { render } from "mustache";
 import { AuthSig, requiredSiweResource } from "./crypto/AuthSig";
 import { EncryptedMemo, EncryptedMemoV1 } from "./EncryptedMemo";
-import { MemoV1 } from "./Memo";
+import { Memo } from "./Memo";
 import { bytesToHex } from "./utils";
 
 export type AccView = {
@@ -43,7 +43,7 @@ export default class Lit {
     await this.client.connect();
   }
 
-  async encryptMemo(memo: MemoV1): Promise<EncryptedMemo> {
+  async encryptMemo(memo: Memo): Promise<EncryptedMemo> {
     const accTemplate = Lit.accTemplate_siweAddr();
     const acc = this.renderAccTemplate(accTemplate, {
       userAddress: memo.payload.toAddr,

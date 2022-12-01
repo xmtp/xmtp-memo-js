@@ -11,6 +11,7 @@ class NoSignerError extends Error {}
 class SignatureMismatchError extends Error {}
 
 export type Payload = PayloadV1;
+export type Memo = MemoV1;
 
 export type ContentData = {
   content: any;
@@ -48,7 +49,6 @@ export class PayloadV1 implements proto.PayloadV1 {
 
 export function decodePayload(bytes: Uint8Array): Payload {
   const o = proto.Payload.decode(bytes);
-  console.log(o);
   if (o.v1) {
     return new PayloadV1(o.v1);
   }
