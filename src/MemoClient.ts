@@ -1,4 +1,4 @@
-import { Client, ContentTypeText, SendOptions } from "@xmtp/xmtp-js";
+import { Client, SendOptions } from "@xmtp/xmtp-js";
 
 import { AuthSig, requiredSiweResource } from "./crypto/AuthSig";
 import Lit from "./Lit";
