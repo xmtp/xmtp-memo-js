@@ -103,8 +103,6 @@ export function decodeEncryptedMemo(bytes: Uint8Array): EncryptedMemo {
   }
 
   throw new InvalidVersionError(
-    `unhandled version found when decodeing EncryptedMemo. ${JSON.stringify(
-      em
-    )}`
+    `unhandled version found when decoding EncryptedMemo. ${JSON.stringify(em)}`
   );
 }

@@ -4,9 +4,13 @@ import { MemoSignature } from "./crypto/MemoSignature";
 import { Client, ContentTypeId, ContentTypeText } from "@xmtp/xmtp-js";
 import { decodeContent } from "@xmtp/xmtp-js";
 
+export class InvalidVersionError extends Error {}
+
 class AddressMismatchError extends Error {}
 class NoSignerError extends Error {}
 class SignatureMismatchError extends Error {}
+
+export type Payload = PayloadV1;
 
 export type ContentData = {
   content: any;
@@ -34,7 +38,7 @@ export class PayloadV1 implements proto.PayloadV1 {
   }
 
   toBytes(): Uint8Array {
-    return proto.PayloadV1.encode(this).finish();
+    return proto.Payload.encode({ v1: this }).finish();
   }
 
   static fromBytes(bytes: Uint8Array): PayloadV1 {
@@ -42,11 +46,23 @@ export class PayloadV1 implements proto.PayloadV1 {
   }
 }
 
+export function decodePayload(bytes: Uint8Array): Payload {
+  const o = proto.Payload.decode(bytes);
+  console.log(o);
+  if (o.v1) {
+    return new PayloadV1(o.v1);
+  }
+
+  throw new InvalidVersionError(
+    `unhandled version found when decoding EncryptedMemo. ${JSON.stringify(o)}`
+  );
+}
+
 export class MemoV1 {
-  payload: PayloadV1;
+  payload: Payload;
   signer?: MemoSigner;
 
-  constructor(payload: PayloadV1, signFunc?: MemoSigner) {
+  constructor(payload: Payload, signFunc?: MemoSigner) {
     this.payload = payload;
     this.signer = signFunc;
   }
@@ -108,7 +124,7 @@ export class DecodedMemoV1 {
     xmtpClient: Client
   ): Promise<DecodedMemoV1> {
     const obj = proto.MemoV1.decode(bytes);
-    const payload = PayloadV1.fromBytes(obj.encodedPayload);
+    const payload = decodePayload(obj.encodedPayload);
     const memoSignature = MemoSignature.fromBytes(obj.signature);
 
     // Ensure Memo is valid prior to instantiating it
