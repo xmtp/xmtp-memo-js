@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package xmtp.memo;
+
+message PayloadV1 {
+  string fromAddr = 1;
+  string toAddr = 2;
+  bytes encodedContent = 3;
+  uint64 timestamp = 4;
+}
+
+message Payload {
+  oneof version {
+    PayloadV1 v1 = 1;
+  }
+}
+
+message MemoV1 {
+  bytes encodedPayload =1;
+  bytes signature = 2;
+}
+
+
+message MemoSignature {
+  bytes signature = 1;
+  uint32 signatureType = 2;
+  bytes signingKey = 3;
+}
+
+message EncryptedMemoV1 {
+  bytes encryptedString = 1;
+  bytes encryptedSymmetricKey = 2;
+  bytes accTemplate = 3;
+}
+
+message EncryptedMemo {
+  oneof version {
+    EncryptedMemoV1 v1 = 1;
+  }
+}
