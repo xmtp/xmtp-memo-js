@@ -10,6 +10,31 @@ Build with `xmtp-memo-js` to send 'messages' to a blockchain wallet address whic
 Memo's are similar to XMTP Messages however they differ substantively.
 
 ## Security Notice
+### Memo Sequence
+
+```mermaid
+sequenceDiagram
+autonumber
+    participant A as Amal
+    participant X as XMTP
+    participant B as Bola
+    A->>X: <Register>
+    Note left of A : 2: Bola is not on the network <br> Can't send messages
+    X -->> A: canMessage(Bola) : False
+    Note left of  A : 3,4: Send memos instead
+    A->>X: Memo1: Hi
+    A->>X: Memo2: Msg me when you get this
+     Note over A,B: 1 Month later
+    B->>X: <Register>
+
+    Note right of B : 6,7: Bola checks for Memos
+    X -->>B: Memo1: Hi
+    X -->>B: Memo2: Msg me when you get this
+     Note right of B : *Send E2E encrypted message to Amal
+    B ->> X: Msg: "Yo whats up?"
+    X -->> A: Msg: "Yo whats up?"
+```
+
 
 `xmtp-memo-js` uses [Lit protocol](https://developer.litprotocol.com/) to secure memos, and do not carry the same security characteristics as XMTP messages.
 
