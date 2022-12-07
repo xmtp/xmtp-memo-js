@@ -1,15 +1,22 @@
 # XMTP-MEMO-JS
 
-**XMTP client SDK for Pre-Registration messaging**
+![Status](https://img.shields.io/badge/Project_Status-Developer_Preview-red)
 
-`xmtp-memo-js` provides a TypeScript implementation of an XMTP memo client.
-Build with `xmtp-memo-js` to send 'messages' to a blockchain wallet address which does not have published encryption keys on the network. `xmtp-memo-js` supports use-cases where content needs to be sent to a account which has not registered yet.
+## XMTP client SDK for Pre-Registration messaging
 
-**What is a memo?**
+:warning: :warning: :warning: XMTP:Memos are available as an early Developer Preview. The api will change without warning and may not be backwards compatible :warning: :warning: :warning:
 
-Memo's are similar to XMTP Messages however they differ substantively.
+`xmtp-memo-js` provides a TypeScript implementation of an XMTP memo client. Build with `xmtp-memo-js` to send 'messages' to a blockchain wallet address which has not yet registered on the XMTP network. `xmtp-memo-js` supports use-cases where content needs to be sent to a account which has not registered yet.
 
-## Security Notice
+### What is a memo?
+
+Memo's are similar to XMTP Messages. They both share the same payload however are used in different circumstances.
+
+- Memos allow developers to send messages to any EVM compatible blockchain address
+- Messages allow developers to send End-to-End encrypted messages to any users registered on the XMTP:Network.
+
+When possible developers should always send messages with [XMTP-JS](https://github.com/xmtp/xmtp-js) to benefit from higher security, and stability.
+
 ### Memo Sequence
 
 ```mermaid
@@ -35,6 +42,7 @@ autonumber
     X -->> A: Msg: "Yo whats up?"
 ```
 
+## :warning: :warning: :warning: Security Notice :warning: :warning: :warning
 
 `xmtp-memo-js` uses [Lit protocol](https://developer.litprotocol.com/) to secure memos, and do not carry the same security characteristics as XMTP messages.
 
