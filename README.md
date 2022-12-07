@@ -4,9 +4,10 @@
 
 ## XMTP client SDK for Pre-Registration messaging
 
-:warning: :warning: :warning: XMTP:Memos are available as an early Developer Preview. The api will change without warning and may not be backwards compatible :warning: :warning: :warning:
-
 `xmtp-memo-js` provides a TypeScript implementation of an XMTP memo client. Build with `xmtp-memo-js` to send 'messages' to a blockchain wallet address which has not yet registered on the XMTP network. `xmtp-memo-js` supports use-cases where content needs to be sent to a account which has not registered yet.
+
+:warning: :warning: :warning: XMTP:Memos are available as an early Developer Preview. :warning: :warning: :warning: <br>
+The api will change without warning and may not be backwards compatible.
 
 ### What is a memo?
 
