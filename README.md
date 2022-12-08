@@ -6,7 +6,7 @@
 
 `xmtp-memo-js` provides a TypeScript implementation of an XMTP memo client.
 
-With XMTP, a blockchain account address must be registered on the XMTP network to send and receive end-to-end encrypted messages. Build your app with `xmtp-memo-js` to enable a registered address to start communicating with an unregistered address by sending a memo instead of a message.
+With XMTP, a blockchain account must be registered on the XMTP network to send and receive end-to-end encrypted messages. Build your app with `xmtp-memo-js` to enable a registered account to start communicating with an unregistered account by sending a memo instead of a message.
 
 :warning: :warning: :warning: `XMTP:Memos` are available as an early Developer Preview. :warning: :warning: :warning: <br>
 The memo API will change without warning and may not be backward compatible.
@@ -15,8 +15,8 @@ The memo API will change without warning and may not be backward compatible.
 
 Memos are not the same as XMTP messages, though they are similar. For example, the payload structure of memos and messages is the same, but memos and messages are used in different circumstances.
 
-- Memos allow a registered address to send messages that are **not end-to-end encrypted** to **any Ethereum Virtual Machine-compatible blockchain address**.
-- Messages allow a registered address to send **end-to-end encrypted messages** to **any address registered on the XMTP network**.
+- Memos allow a registered account to send messages that are **not end-to-end encrypted** to **any Ethereum Virtual Machine-compatible blockchain account**.
+- Messages allow a registered account to send **end-to-end encrypted messages** to **any account registered on the XMTP network**.
 
 When possible, developers should always send messages with [XMTP-JS](https://github.com/xmtp/xmtp-js) to benefit from higher security and stability.
 
@@ -93,16 +93,16 @@ const memoClient = await MemoClient.create(authSig, client);
 
 ## Send a memo
 
-Memos don't require that the recipient address be registered on the XMTP network. Here is an example Memo payload:
+Memos don't require that the recipient account be registered on the XMTP network. Here is an example Memo payload:
 
 ```ts
-// Send a memo. There is no requirement that this address be registered on the XTMP network.
+// Send a memo. There is no requirement that this account be registered on the XTMP network.
 memoClient.sendMemo('0x0000000000000000000000000000000000000000', "Gm!")
 ```
 
 ## List memos
 
-Here is an example of how to retrieve and list memos for an address:
+Here is an example of how to retrieve and list memos for an account:
 
 ```ts
 for (const memo of await receiver.listAllMemos()) {
