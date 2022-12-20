@@ -1,6 +1,6 @@
 # XMTP-MEMO-JS
 
-![Status](https://img.shields.io/badge/Project_Status-Developer_Preview-red)
+![Status](https://img.shields.io/badge/Project_Status-Developer_Preview-yellow)
 
 ## XMTP client SDK for pre-registration messaging
 
