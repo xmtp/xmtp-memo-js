@@ -1,6 +1,6 @@
 # XMTP-MEMO-JS
 
-![Status](https://img.shields.io/badge/Project_Status-Developer_Preview-red)
+![Status](https://img.shields.io/badge/Project_Status-Pre--Preview-orange)
 
 ## XMTP client SDK for pre-registration messaging
 
@@ -8,7 +8,7 @@
 
 With XMTP, a blockchain account must be registered on the XMTP network to send and receive end-to-end encrypted messages. Build your app with `xmtp-memo-js` to enable a registered account to start communicating with an unregistered account by sending a memo instead of a message.
 
-:warning: :warning: :warning: `XMTP:Memos` are available as an early Developer Preview. :warning: :warning: :warning: <br>
+:warning: :warning: :warning: `XMTP:Memos` are available in **Pre-Preview status**. :warning: :warning: :warning: <br>
 The memo API will change without warning and may not be backward compatible.
 
 ### What is a memo?
