@@ -96,7 +96,7 @@ const memoClient = await MemoClient.create(authSig, client);
 Memos don't require that the recipient account be registered on the XMTP network. Here is an example Memo payload:
 
 ```ts
-// Send a memo. There is no requirement that this account be registered on the XTMP network.
+// Send a memo. There is no requirement that this account be registered on the XMTP network.
 memoClient.sendMemo('0x0000000000000000000000000000000000000000', "Gm!")
 ```
 
