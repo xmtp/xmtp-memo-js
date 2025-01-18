@@ -132,7 +132,7 @@ export class DecodedMemoV1 {
       throw new SignatureMismatchError();
     }
 
-    // Ensure addesses are correct
+    // Ensure addresses are correct
     const signingAddress = await memoSignature.signingKey.getAddress();
     if (signingAddress !== payload.fromAddr) {
       throw new AddressMismatchError(

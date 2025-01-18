@@ -40,7 +40,7 @@ describe("MemoClient", function () {
     // Lit Needs some time before the Keys can be fetched
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Reciever registers after the messages have been sent
+    // Receiver registers after the messages have been sent
     const receiver = await createTestMemoClient(destinationWallet);
     const memos = await receiver.listAllMemos();
     assert.equal(
